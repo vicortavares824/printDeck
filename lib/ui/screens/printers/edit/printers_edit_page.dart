@@ -1010,8 +1010,8 @@ class _ThemeSelector extends ConsumerWidget {
             child: Row(
               children: [
                 (brandingIcon == null)
-                    ? SvgPicture.asset(
-                        'assets/vector/mr_logo.svg',
+                    ? Image.asset(
+                        'assets/icon/printdeck_logo.png',
                         width: 32,
                         height: 32,
                       )

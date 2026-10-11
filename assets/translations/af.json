@@ -237,9 +237,13 @@
       },
       "developer": {
         "title": "Onwikkelaar",
-        "crashlytics": "Skakel Crashlytics rapportering aan"
+        "crashlytics": "Skakel Crashlytics rapportering aan",
+        "debug_logs": "Debug Logs"
       },
-      "imprint": "Privaatheid/Impressum"
+      "imprint": "Privaatheid/Impressum",
+      "ui": {
+        "title": "UI"
+      }
     },
     "printer_edit": {
       "title": "Redigeer {}",

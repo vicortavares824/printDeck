@@ -318,9 +318,13 @@
       },
       "developer": {
         "title": "Developer",
-        "crashlytics": "Enable Crashlytics reporting"
+        "crashlytics": "Enable Crashlytics reporting",
+        "debug_logs": "Debug Logs"
       },
-      "imprint": "Privacy/Impressum"
+      "imprint": "Privacy/Impressum",
+      "ui": {
+        "title": "UI"
+      }
     },
     "printer_edit": {
       "title": "Edit {}",
@@ -1853,5 +1857,13 @@
         "nativeName": "Brasil"
       }
     }
+  },
+  "print_state": {
+    "standby": "Standby",
+    "printing": "Printing",
+    "paused": "Paused",
+    "complete": "Complete",
+    "cancelled": "Cancelled",
+    "error": "Error"
   }
 }

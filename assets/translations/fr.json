@@ -286,9 +286,13 @@
       },
       "developer": {
         "title": "Développeur",
-        "crashlytics": "Activer la collecte via Crashlytics pour aider à améliorer l'application"
+        "crashlytics": "Activer la collecte via Crashlytics pour aider à améliorer l'application",
+        "debug_logs": "Debug Logs"
       },
-      "imprint": "Vie privée/Impression"
+      "imprint": "Vie privée/Impression",
+      "ui": {
+        "title": "UI"
+      }
     },
     "printer_edit": {
       "title": "Editer {}",
@@ -327,7 +331,6 @@
         "pin_certificate_label": "Épinglage des empreintes digitales des certificats",
         "pin_certificate_helper": "Sélectionner un fichier de certificat au format PEM pour l'épinglage SSL",
         "self_signed": "Faire confiance aux certificats auto-signés"
-
       },
       "motion_system": {
         "title": "Système de mouvement",

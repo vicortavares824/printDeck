@@ -318,9 +318,13 @@
       },
       "developer": {
         "title": "Entwickler",
-        "crashlytics": "Crashlytics-Berichterstattung aktivieren"
+        "crashlytics": "Crashlytics-Berichterstattung aktivieren",
+        "debug_logs": "Debug Logs"
       },
-      "imprint": "Privatsphäre/Impressum"
+      "imprint": "Privatsphäre/Impressum",
+      "ui": {
+        "title": "UI"
+      }
     },
     "printer_edit": {
       "title": "Bearbeiten {}",

@@ -139,7 +139,7 @@ ThemePack _mobilerakerPack() {
   );
 
   return ThemePack(
-    name: 'Mobileraker',
+    name: 'PrintDeck',
     lightTheme: light.copyWith(
       elevatedButtonTheme: _elevatedButtonThemeData,
       bottomNavigationBarTheme: FlexSubThemes.bottomNavigationBar(

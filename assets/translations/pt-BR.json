@@ -182,24 +182,61 @@
       "title": "Configurações do Aplicativo",
       "general": {
         "title": "Geral",
-        "ems_confirm": "Confirmação de Parada de Emergência",
-        "always_baby": "Sempre Mostrar Tela de Z-Offset",
-        "num_edit": "Teclado para Entrada de Números",
-        "start_with_overview": "Iniciar com a Visão Geral de @:pages.overview.title",
-        "use_offset_pos": "Mostrar Coordenadas com Offset",
+        "ems_confirm": "Confirmar Parada de Emergência",
+        "always_baby": "Card de Z-Offset Sempre Visível",
+        "num_edit": "Entrada por Teclado Numérico",
+        "start_with_overview": "Definir @:pages.overview.title como Tela Inicial",
+        "use_offset_pos": "Deslocamento de Posição (Offset)",
         "language": "Idioma",
-        "companion": "Você deseja receber notificações remotas?\nSaiba como instalar o Mobileraker Companion no seu sistema."
+        "companion": "Deseja receber notificações remotas?\nSaiba como configurar o Companion do Mobileraker em seu ",
+        "ems_confirm_hint": "Exibir diálogo de confirmação antes de enviar comando de parada de emergência",
+        "always_baby_hint": "Sempre exibir o card de Z-Offset no painel principal",
+        "num_edit_hint": "Usar teclado numérico para inserir valores em vez de controles deslizantes",
+        "start_with_overview_hint": "Iniciar o aplicativo na tela de visão geral em vez do painel da impressora ativa",
+        "use_offset_pos_hint": "Adicionar o deslocamento (offset) às coordenadas exibidas",
+        "lcFullCam": "Orientação da Câmera em Tela Cheia",
+        "lcFullCam_hint": "Alternar a câmera para o modo paisagem em tela cheia",
+        "sliders_grouping": "Agrupar Cards de Controles",
+        "sliders_grouping_hint": "Agrupar todos os controles deslizantes em um único card",
+        "time_format": "Formato de Hora",
+        "system_theme": "Tema da Interface",
+        "system_theme_mode": "Brilho / Modo do Tema",
+        "printer_theme_warning": "No momento você está usando um tema específico da impressora. Para alterá-lo, acesse as configurações da impressora.",
+        "filament_sensor_dialog": "Alertas do Sensor de Filamento",
+        "filament_sensor_dialog_hint": "Exibir diálogo quando um sensor de filamento for acionado",
+        "confirm_gcode": "Confirmar Execução de Macros",
+        "confirm_gcode_hint": "Sempre exibir diálogo de confirmação antes de executar uma Macro G-Code no painel"
       },
       "notification": {
-        "title": "Notificação",
-        "progress_label": "Notificações de Progresso de Impressão",
-        "progress_helper": "Intervalo para Notificações de Progresso de Impressão",
+        "title": "Notificações",
+        "progress_label": "Notificação de Progresso",
+        "progress_helper": "Intervalo de atualização das notificações de progresso da impressão",
         "no_permission_title": "Sem Permissão para Notificações!",
-        "no_permission_desc": "Não é possível exibir notificações.\nConceda permissão tocando aqui!",
-        "ios_notifications_title": "Notificações Push no iOS",
-        "ios_notifications_desc": "As notificações exigem que o Mobileraker seja aberto pelo menos uma vez e permaneça em segundo plano.\nNo entanto, algumas notificações podem ser bloqueadas pelo sistema operacional!"
+        "no_permission_desc": "Não é possível exibir notificações.\nToque para solicitar permissão!",
+        "ios_notifications_title": "Entrega de Notificações no iOS",
+        "ios_notifications_desc": "As notificações exigem que o aplicativo seja aberto ao menos uma vez e fique em segundo plano.\nAinda assim, algumas notificações podem ser bloqueadas pelo sistema operacional!",
+        "state_label": "Notificação de Estado",
+        "state_helper": "Estados que disparam notificação de alteração",
+        "no_firebase_title": "Não é possível exibir notificações",
+        "no_firebase_desc": "O PrintDeck não consegue enviar notificações para o dispositivo.\nParece que o dispositivo não possui o Google Play Services ou está bloqueando a conexão do Firebase!",
+        "missing_companion_title": "Companion não encontrado!",
+        "missing_companion_body": "Parece que o Companion não está instalado e as seguintes máquinas não podem enviar notificações: {}\n\nToque para saber mais!",
+        "enable_live_activity": "Ativar Live Activity",
+        "enable_live_activity_helper": "Ativa o uso de Live Activity além das notificações de progresso padrão",
+        "opt_out_marketing": "Notificações de Novidades e Marketing",
+        "opt_out_marketing_helper": "Receber atualizações sobre novidades e promoções",
+        "use_progressbar_notification": "Notificação com Barra de Progresso",
+        "use_progressbar_notification_helper": "Ativa uma notificação com barra de progresso além das notificações de texto padrão"
       },
-      "imprint": "Privacidade/Impressum"
+      "imprint": "Privacidade/Impressum",
+      "ui": {
+        "title": "Interface"
+      },
+      "developer": {
+        "title": "Desenvolvedor",
+        "crashlytics": "Ativar relatórios de erros (Crashlytics)",
+        "debug_logs": "Logs de Depuração"
+      }
     },
     "printer_edit": {
       "title": "Editar {}",
@@ -333,6 +370,10 @@
       "trying_connect": "Tentando conectar...",
       "trying_connect_remote": "Tentando conectar usando cliente remoto...",
       "server_starting": "O servidor está iniciando..."
+    },
+    "app_version_display": {
+      "version": "Versão:",
+      "installed_version": "Versão Instalada:"
     }
   },
   "dialogs": {
@@ -409,5 +450,18 @@
         "title": "Progresso de Impressão de {}"
       }
     }
+  },
+  "theme_mode": {
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Padrão do Sistema"
+  },
+  "print_state": {
+    "standby": "Em Espera",
+    "printing": "Imprimindo",
+    "paused": "Pausado",
+    "complete": "Concluído",
+    "cancelled": "Cancelado",
+    "error": "Erro"
   }
 }

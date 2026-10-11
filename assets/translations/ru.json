@@ -40,7 +40,6 @@
           "flow": "Поток",
           "filament": "Филамент",
           "filament_tooltip": "Использовано {} % Филамента, т.е {} m из {} m прогнозированного."
-
         },
         "cam_card": {
           "webcam": "Веб-камера",
@@ -199,7 +198,13 @@
         "ios_notifications_title": "Доставка уведомлений на IOS",
         "ios_notifications_desc": "Уведомления требуют, чтобы mobileraker был открыт хотя бы один раз и работал в фоновом режиме..\nТем не менее, некоторые уведомления могут быть заблокированы ОС.!"
       },
-      "imprint": "Конфиденциальность/Выходные данные"
+      "imprint": "Конфиденциальность/Выходные данные",
+      "ui": {
+        "title": "UI"
+      },
+      "developer": {
+        "debug_logs": "Debug Logs"
+      }
     },
     "printer_edit": {
       "title": "Редактировать {}",
@@ -295,7 +300,7 @@
   },
   "components": {
     "pull_to_refresh": {
-      "pull_up_idle" : "Потяните вверх, чтобы обновить"
+      "pull_up_idle": "Потяните вверх, чтобы обновить"
     },
     "nav_drawer": {
       "printer_settings": "Printer Settings",

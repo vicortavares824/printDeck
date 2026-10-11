@@ -234,7 +234,13 @@
         "missing_companion_title": "找不到配套软件！",
         "missing_companion_body": "似乎没有安装配套软件，因此以下计算机无法发送通知：｛｝\n点击了解更多信息！"
       },
-      "imprint": "隐私声明及用户协议"
+      "imprint": "隐私声明及用户协议",
+      "ui": {
+        "title": "UI"
+      },
+      "developer": {
+        "debug_logs": "Debug Logs"
+      }
     },
     "printer_edit": {
       "title": "编辑 {}",

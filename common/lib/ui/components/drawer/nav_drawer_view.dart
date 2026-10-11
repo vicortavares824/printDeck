@@ -11,15 +11,11 @@ import 'package:common/service/selected_machine_service.dart';
 import 'package:common/service/ui/theme_service.dart';
 import 'package:common/util/extensions/async_ext.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:progress_indicators/progress_indicators.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 import 'nav_drawer_controller.dart';
 
@@ -75,10 +71,20 @@ class NavigationDrawerWidget extends ConsumerWidget {
                     ),
                     if (ref.watch(remoteConfigProvider).showSpoolmanPage)
                       const _DrawerItem(
-                      text: 'Spoolman',
+                        text: 'Spoolman',
                         icon: FlutterIcons.database_ent,
                         routeName: '/spoolman',
                       ),
+                    const _DrawerItem(
+                      text: 'Estoque de Filamento',
+                      icon: Icons.inventory_2_outlined,
+                      routeName: '/stock',
+                    ),
+                    const _DrawerItem(
+                      text: 'Verificar Produto / QR',
+                      icon: Icons.qr_code_scanner,
+                      routeName: '/product-scanner',
+                    ),
                     const Divider(),
                     _DrawerItem(
                       text: 'pages.setting.title'.tr(),
@@ -86,22 +92,6 @@ class NavigationDrawerWidget extends ConsumerWidget {
                       routeName: '/setting',
                     ),
                     const Divider(),
-                    _DrawerItem(
-                      text: tr('pages.faq.title'),
-                      icon: Icons.help,
-                      routeName: '/faq',
-                    ),
-                    _DrawerItem(
-                      text: tr('pages.changelog.title'),
-                      icon: Icons.history,
-                      routeName: '/changelog',
-                    ),
-                    if (kDebugMode)
-                      const _DrawerItem(
-                        text: 'DEV',
-                        icon: FlutterIcons.build_mdi,
-                        routeName: '/dev',
-                      ),
                     const _DrawerItem(
                       text: 'Tools',
                       icon: FlutterIcons.toolbox_faw5s,
@@ -112,50 +102,7 @@ class NavigationDrawerWidget extends ConsumerWidget {
               ),
             ),
           ),
-          SafeArea(
-            top: false,
-            child: Container(
-              alignment: Alignment.center,
-              padding: const EdgeInsets.only(bottom: 20, top: 10),
-              child: RichText(
-                text: TextSpan(
-                  style: themeData.textTheme.bodySmall!.copyWith(color: themeData.colorScheme.onSurface),
-                  text: 'components.nav_drawer.footer'.tr(),
-                  children: [
-                    TextSpan(
-                      text: ' GitHub ',
-                      style: TextStyle(color: themeData.colorScheme.secondary),
-                      children: const [
-                        WidgetSpan(
-                          child: Icon(FlutterIcons.github_alt_faw, size: 18),
-                        ),
-                      ],
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () async {
-                          const String url = 'https://github.com/Clon1998/mobileraker';
-                          if (await canLaunchUrlString(url)) {
-                            await launchUrlString(
-                              url,
-                              mode: LaunchMode.externalApplication,
-                            );
-                          } else {
-                            throw 'Could not launch $url';
-                          }
-                        },
-                    ),
-                    const TextSpan(text: '\n\n'),
-                    TextSpan(
-                      text: tr('pages.setting.imprint'),
-                      style: TextStyle(color: themeData.colorScheme.secondary),
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () => ref.read(navDrawerControllerProvider.notifier).pushingTo('/imprint'),
-                    ),
-                  ],
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
+         
         ],
       ),
     );
@@ -204,7 +151,7 @@ class _NavHeader extends ConsumerWidget {
                     children: [
                       (brandingIcon == null)
                           ? SvgPicture.asset(
-                              'assets/vector/mr_logo.svg',
+                              'assets/vector/Logo.svg',
                               width: 60,
                               height: 60,
                             )

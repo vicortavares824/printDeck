@@ -15,8 +15,9 @@ import 'package:common/service/selected_machine_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:mobileraker/routing/app_router.dart';
 import 'package:common/ui/components/drawer/nav_drawer_view.dart';
+import 'package:mobileraker/routing/app_router.dart';
+import 'package:mobileraker/ui/components/cloud_sync_button.dart';
 
 class OverviewPage extends StatelessWidget {
   const OverviewPage({super.key});
@@ -26,6 +27,9 @@ class OverviewPage extends StatelessWidget {
         appBar: AppBar(
           title: const Text('PrintDeck'),
           centerTitle: false,
+          actions: const [
+            CloudSyncButton(),
+          ],
         ),
         body: const PrintDeckOverviewBody(),
         drawer: const NavigationDrawerWidget(),

@@ -267,8 +267,8 @@ class _LoadingSplashScreen extends HookWidget {
                   parent: animCtrler,
                   curve: Curves.elasticInOut,
                 ),
-                child: SvgPicture.asset(
-                  'assets/vector/mr_logo.svg',
+                child: Image.asset(
+                  'assets/icon/printdeck_logo.png',
                   height: 120,
                 ),
               ),

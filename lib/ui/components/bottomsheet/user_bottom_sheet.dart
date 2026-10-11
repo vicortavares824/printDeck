@@ -299,8 +299,8 @@ class _Profile extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // _EmailVerificationBadge(),
-          SvgPicture.asset(
-            'assets/vector/mr_logo.svg',
+          Image.asset(
+            'assets/icon/printdeck_logo.png',
             width: 100,
             height: 100,
           ),

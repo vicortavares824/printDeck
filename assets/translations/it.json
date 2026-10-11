@@ -243,9 +243,13 @@
       },
       "developer": {
         "title": "Sviluppatore",
-        "crashlytics": "Attiva la segnalazione dei Crashlytics"
+        "crashlytics": "Attiva la segnalazione dei Crashlytics",
+        "debug_logs": "Debug Logs"
       },
-      "imprint": "Privacy/Impressum"
+      "imprint": "Privacy/Impressum",
+      "ui": {
+        "title": "UI"
+      }
     },
     "printer_edit": {
       "title": "Modifica {}",
@@ -650,5 +654,4 @@
       "other": "Giorni"
     }
   }
-  
 }

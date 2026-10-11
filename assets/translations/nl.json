@@ -236,9 +236,13 @@
       },
       "developer": {
         "title": "Ontwikkelaar",
-        "crashlytics": "Crashlytics rapportering inschakelen"
+        "crashlytics": "Crashlytics rapportering inschakelen",
+        "debug_logs": "Debug Logs"
       },
-      "imprint": "Privacy/Impressum"
+      "imprint": "Privacy/Impressum",
+      "ui": {
+        "title": "UI"
+      }
     },
     "printer_edit": {
       "title": "Edit {}",

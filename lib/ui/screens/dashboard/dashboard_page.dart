@@ -34,6 +34,7 @@ import 'package:mobileraker_pro/service/ui/pro_sheet_type.dart';
 import 'package:rate_my_app/rate_my_app.dart';
 
 import '../../components/connection/machine_connection_guard.dart';
+import '../../components/cloud_sync_button.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -79,6 +80,7 @@ class _DashboardView extends HookConsumerWidget {
       appBar: SwitchPrinterAppBar(
         title: tr('pages.dashboard.title'),
         actions: <Widget>[
+          const CloudSyncButton(),
           MachineStateIndicator(activeMachine),
           const EmergencyStopBtn(),
         ],

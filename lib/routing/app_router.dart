@@ -31,9 +31,11 @@ import 'package:mobileraker/ui/screens/paywall/paywall_page.dart';
 import 'package:mobileraker/ui/screens/printers/add/printers_add_page.dart';
 import 'package:mobileraker/ui/screens/printers/edit/printers_edit_page.dart';
 import 'package:mobileraker/ui/screens/qr_scanner/qr_scanner_page.dart';
+import 'package:mobileraker/ui/screens/scanner/universal_product_scanner_page.dart';
 import 'package:mobileraker/ui/screens/setting/imprint/imprint_view.dart';
 import 'package:mobileraker/ui/screens/setting/setting_page.dart';
 import 'package:mobileraker/ui/screens/spoolman/filament_detail_page.dart';
+import 'package:mobileraker/ui/screens/spoolman/local_filament_stock_page.dart';
 import 'package:mobileraker/ui/screens/spoolman/spool_detail_page.dart';
 import 'package:mobileraker/ui/screens/spoolman/spoolman_page.dart';
 import 'package:mobileraker/ui/screens/spoolman/vendor_detail_page.dart';
@@ -72,7 +74,9 @@ enum AppRoute implements RouteDefinitionMixin {
   spoolman,
   spoolman_vendorDetails,
   spoolman_spoolDetails,
-  spoolman_filamentDetails;
+  spoolman_filamentDetails,
+  localStock,
+  productScanner;
 }
 
 @riverpod
@@ -273,6 +277,16 @@ GoRouter goRouterImpl(GoRouterRef ref) {
             },
           ),
         ],
+      ),
+      GoRoute(
+        path: '/stock',
+        name: AppRoute.localStock.name,
+        builder: (context, state) => const LocalFilamentStockPage(),
+      ),
+      GoRoute(
+        path: '/product-scanner',
+        name: AppRoute.productScanner.name,
+        builder: (context, state) => const UniversalProductScannerPage(),
       ),
     ],
     // errorBuilder: (context, state) => const NotFoundScreen(),

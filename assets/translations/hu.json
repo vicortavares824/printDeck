@@ -310,9 +310,13 @@
       },
       "developer": {
         "title": "Fejlesztő",
-        "crashlytics": "Crashlytics jelentések engedélyezése"
+        "crashlytics": "Crashlytics jelentések engedélyezése",
+        "debug_logs": "Debug Logs"
       },
-      "imprint": "Adatvédelem/Impresszum"
+      "imprint": "Adatvédelem/Impresszum",
+      "ui": {
+        "title": "UI"
+      }
     },
     "printer_edit": {
       "title": "Szerkesztés {}",
@@ -520,8 +524,8 @@
       "title": "Konzol",
       "no_entries": "Nem találtunk gyorsítótárazott parancsokat",
       "fetching_console": "@:general.fetching konzol bejegyzések...",
-      "command_input" : {
-        "hint":"Konzolparancs megadása"
+      "command_input": {
+        "hint": "Konzolparancs megadása"
       }
     },
     "overview": {

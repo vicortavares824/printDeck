@@ -136,7 +136,7 @@ class SettingPage extends ConsumerWidget {
                 ),
                 activeColor: themeData.colorScheme.primary,
               ),
-              const _SectionHeader(title: 'UI'),
+              _SectionHeader(title: 'pages.setting.ui.title'.tr()),
               const _ThemeSelector(),
               const _ThemeModeSelector(),
               FormBuilderSwitch(
@@ -205,86 +205,7 @@ class SettingPage extends ConsumerWidget {
                 ),
                 activeColor: themeData.colorScheme.primary,
               ),
-              const _NotificationSection(),
-              const Divider(),
-              const _DeveloperSection(),
-              const Divider(),
-              if (Platform.isIOS)
-                TextButton(
-                  style: TextButton.styleFrom(
-                    minimumSize: Size.zero, // Set this
-                    padding: EdgeInsets.zero,
-                    textStyle: themeData.textTheme.bodySmall?.copyWith(color: themeData.colorScheme.secondary),
-                  ),
-                  child: const Text('EULA'),
-                  onPressed: () async {
-                    const String url = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
-                    if (await canLaunchUrlString(url)) {
-                      await launchUrlString(
-                        url,
-                        mode: LaunchMode.externalApplication,
-                      );
-                    } else {
-                      throw 'Could not launch $url';
-                    }
-                  },
-                ),
-              if (Platform.isAndroid)
-                TextButton(
-                  style: TextButton.styleFrom(
-                    minimumSize: Size.zero, // Set this
-                    padding: EdgeInsets.zero,
-                    textStyle: themeData.textTheme.bodySmall?.copyWith(color: themeData.colorScheme.secondary),
-                  ),
-                  child: const Text('EULA'),
-                  onPressed: () async {
-                    const String url = 'https://mobileraker.com/eula.html';
-                    if (await canLaunchUrlString(url)) {
-                      await launchUrlString(
-                        url,
-                        mode: LaunchMode.externalApplication,
-                      );
-                    } else {
-                      throw 'Could not launch $url';
-                    }
-                  },
-                ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  minimumSize: Size.zero, // Set this
-                  padding: EdgeInsets.zero,
-                  textStyle: themeData.textTheme.bodySmall?.copyWith(color: themeData.colorScheme.secondary),
-                ),
-                child: Text(
-                  MaterialLocalizations.of(context).viewLicensesButtonLabel,
-                ),
-                onPressed: () {
-                  var version = ref.watch(versionInfoProvider).maybeWhen(
-                        orElse: () => 'unavailable',
-                        data: (d) => '${d.version}-${d.buildNumber}',
-                      );
-
-                  showLicensePage(
-                    context: context,
-                    applicationVersion: version,
-                    applicationLegalese: 'Copyright (c) 2021 - ${DateTime.now().year} Patrick Schmidt',
-                    applicationIcon: Center(
-                      child: SvgPicture.asset(
-                        'assets/vector/mr_logo.svg',
-                        width: 80,
-                        height: 80,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              Align(
-                alignment: Alignment.center,
-                child: AppVersionText(
-                  prefix: tr('components.app_version_display.version'),
-                ),
-              ),
-              // _SectionHeader(title: 'Notifications'),
+             
             ],
           ),
         ),
@@ -339,29 +260,8 @@ class _NotificationSection extends ConsumerWidget {
             activeColor: themeData.colorScheme.primary,
           ),
         const _ProgressNotificationSettingField(),
-        const _StateNotificationSettingField(),
-        const _OptOutOfAdPush(),
-        const Divider(),
-        RichText(
-          text: TextSpan(
-            style: themeData.textTheme.bodySmall,
-            text: tr('pages.setting.general.companion'),
-            children: [
-              TextSpan(
-                text: '\nOfficial GitHub ',
-                style: TextStyle(color: themeData.colorScheme.secondary),
-                children: const [
-                  WidgetSpan(
-                    child: Icon(FlutterIcons.github_alt_faw, size: 18),
-                  ),
-                ],
-                recognizer: TapGestureRecognizer()
-                  ..onTap = ref.read(settingPageControllerProvider.notifier).openCompanion,
-              ),
-            ],
-          ),
-          textAlign: TextAlign.center,
-        ),
+       
+       
       ],
     );
   }
@@ -394,7 +294,7 @@ class _DeveloperSection extends ConsumerWidget {
             padding: EdgeInsets.zero,
             textStyle: themeData.textTheme.bodySmall?.copyWith(color: themeData.colorScheme.secondary),
           ),
-          child: const Text('Debug-Logs'),
+          child: const Text('pages.setting.developer.debug_logs').tr(),
           onPressed: () {
             var dialogService = ref.read(dialogServiceProvider);
             dialogService.show(DialogRequest(type: DialogType.logging));
@@ -519,8 +419,8 @@ class _ThemeSelector extends ConsumerWidget {
           child: Row(
             children: [
               (brandingIcon == null)
-                  ? SvgPicture.asset(
-                      'assets/vector/mr_logo.svg',
+                  ? Image.asset(
+                      'assets/icon/printdeck_logo.png',
                       width: 32,
                       height: 32,
                     )
@@ -639,7 +539,7 @@ class _StateNotificationSettingField extends ConsumerWidget {
                 return FilterChip(
                   selected: selected,
                   elevation: 2,
-                  label: Text(e.displayName),
+                  label: Text('print_state.${e.name}'.tr()),
                   onSelected: (bool s) {
                     if (s) {
                       field.didChange({...value, e});

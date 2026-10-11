@@ -206,7 +206,13 @@
         "ios_notifications_title": "Livrare notificări IOS",
         "ios_notifications_desc": "Notificările necesită ca Mobileraker să fie deschis cel puțin o data și să fie activ în fundal.\nAnumite notificări pot fi în continuare blocate de sistemul de operare!"
       },
-      "imprint": "Confidențialitate/Impressum"
+      "imprint": "Confidențialitate/Impressum",
+      "ui": {
+        "title": "UI"
+      },
+      "developer": {
+        "debug_logs": "Debug Logs"
+      }
     },
     "printer_edit": {
       "title": "Editează {}",
@@ -304,7 +310,7 @@
     "faq": {
       "title": "FAQ",
       "loading": "@:general.loading FAQ...",
-      "error":"A apărut o eroare la descărcarea FAQ",
+      "error": "A apărut o eroare la descărcarea FAQ",
       "open_in_browser": "Deschide @:pages.faq.title în Browser"
     }
   },
