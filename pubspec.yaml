@@ -23,6 +23,8 @@ environment:
 
 
 dependency_overrides:
+  common:
+    path: common
   intl: ^0.18.1 # required due to awesome notifications and formbuilder
   web: ^0.5.1 # required because network info is using 0.3, but this package is only used by web which we dont build
   hashlib: 1.12.0 # matches the API used by the 2.6.20 source
@@ -200,14 +202,14 @@ flutter_icons:
   android: true
   ios: true
   min_sdk_android: 25
-  image_path: "assets/icon/mr_rec.png"
+  image_path: "assets/icon/ic_launcher.png"
   #image_path_ios: "assets/icon/mr_rec.png"
   adaptive_icon_background: "#2A2A2A"
-  adaptive_icon_foreground: "assets/icon/ic_launcher_foreground.png"
+  adaptive_icon_foreground: "assets/icon/ic_launcher.png"
   remove_alpha_ios: true
   macos:
     generate: true
-    image_path: "assets/icon/mr_rec.png"
+    image_path: "assets/icon/ic_launcher.png"
 
 flutter_native_splash:
 
