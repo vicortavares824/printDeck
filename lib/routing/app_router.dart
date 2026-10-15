@@ -30,6 +30,7 @@ import 'package:mobileraker/ui/screens/overview/overview_page.dart';
 import 'package:mobileraker/ui/screens/paywall/paywall_page.dart';
 import 'package:mobileraker/ui/screens/printers/add/printers_add_page.dart';
 import 'package:mobileraker/ui/screens/printers/edit/printers_edit_page.dart';
+import 'package:mobileraker/ui/screens/printers/import_export/printer_import_export_page.dart';
 import 'package:mobileraker/ui/screens/qr_scanner/qr_scanner_page.dart';
 import 'package:mobileraker/ui/screens/scanner/universal_product_scanner_page.dart';
 import 'package:mobileraker/ui/screens/setting/imprint/imprint_view.dart';
@@ -76,7 +77,8 @@ enum AppRoute implements RouteDefinitionMixin {
   spoolman_spoolDetails,
   spoolman_filamentDetails,
   localStock,
-  productScanner;
+  productScanner,
+  printerImportExport;
 }
 
 @riverpod
@@ -287,6 +289,11 @@ GoRouter goRouterImpl(GoRouterRef ref) {
         path: '/product-scanner',
         name: AppRoute.productScanner.name,
         builder: (context, state) => const UniversalProductScannerPage(),
+      ),
+      GoRoute(
+        path: '/printer/import-export',
+        name: AppRoute.printerImportExport.name,
+        builder: (context, state) => const PrinterImportExportPage(),
       ),
     ],
     // errorBuilder: (context, state) => const NotFoundScreen(),

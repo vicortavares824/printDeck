@@ -25,6 +25,8 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mobileraker/routing/app_router.dart';
 import 'package:mobileraker/service/ui/dialog_service_impl.dart';
 import 'package:mobileraker/ui/components/app_version_text.dart';
 import 'package:mobileraker/ui/screens/setting/setting_controller.dart';
@@ -135,6 +137,13 @@ class SettingPage extends ConsumerWidget {
                   isCollapsed: true,
                 ),
                 activeColor: themeData.colorScheme.primary,
+              ),
+              ListTile(
+                title: const Text('Importar / Exportar Impressoras (JSON)'),
+                subtitle: const Text('Backup e migração em massa por IP ou URLs'),
+                leading: const Icon(Icons.sync_alt),
+                trailing: const Icon(Icons.arrow_forward_ios_sharp, size: 16),
+                onTap: () => context.pushNamed(AppRoute.printerImportExport.name),
               ),
               _SectionHeader(title: 'pages.setting.ui.title'.tr()),
               const _ThemeSelector(),

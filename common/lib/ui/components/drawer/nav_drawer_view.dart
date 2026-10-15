@@ -292,6 +292,14 @@ class _PrinterSelection extends ConsumerWidget {
                   trailing: const Icon(Icons.add, size: baseIconSize),
                   onTap: () => ref.read(navDrawerControllerProvider.notifier).pushingTo('/printer/add'),
                 ),
+                ListTile(
+                  title: const Text('Importar / Exportar (JSON)'),
+                  contentPadding: basePadding,
+                  textColor: themeData.colorScheme.onBackground,
+                  iconColor: themeData.colorScheme.onBackground,
+                  trailing: const Icon(Icons.import_export, size: baseIconSize),
+                  onTap: () => ref.read(navDrawerControllerProvider.notifier).pushingTo('/printer/import-export'),
+                ),
               ],
             )
           : const SizedBox.shrink(),

@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import 'product_code_parser.dart';
+
 enum AutoSearchTarget {
   ask,
   mercadoLivre,
   shopee,
+  tiktok,
   google,
 }
 
@@ -53,35 +56,74 @@ class _UniversalProductScannerPageState
   }
 
   Future<void> _processCode(String code) async {
-    // 1. Se for URL direta (ex: link do Mercado Livre, Shopee ou qualquer site)
-    if (code.startsWith('http://') || code.startsWith('https://')) {
-      await _openUrl(code);
+    final parsed = parseProductCode(code);
+
+    // 1. Se a plataforma for explicitamente identificada pelo QR Code:
+    if (parsed.isMercadoLivre) {
+      if (_autoTarget == AutoSearchTarget.ask) {
+        _showProductResultModal(parsed);
+      } else {
+        await _openUrl(parsed.productId != null ? parsed.mlbProductUrl : parsed.mlbSearchUrl);
+        _resetScanner();
+      }
+      return;
+    }
+
+    if (parsed.isShopee) {
+      if (_autoTarget == AutoSearchTarget.ask) {
+        _showProductResultModal(parsed);
+      } else {
+        await _openUrl(parsed.shopeeProductUrl);
+        _resetScanner();
+      }
+      return;
+    }
+
+    if (parsed.isTikTok) {
+      if (_autoTarget == AutoSearchTarget.ask) {
+        _showProductResultModal(parsed);
+      } else {
+        await _openUrl(parsed.tiktokProductUrl);
+        _resetScanner();
+      }
+      return;
+    }
+
+    // 2. Se for uma URL direta genérica
+    if (parsed.directUrl != null) {
+      await _openUrl(parsed.directUrl!);
       _resetScanner();
       return;
     }
 
-    // 2. Se for código de barras (EAN/UPC) e a auto-pesquisa estiver ligada:
+    // 3. Fallback baseado no alvo padrão configurado pelo usuário
     switch (_autoTarget) {
       case AutoSearchTarget.mercadoLivre:
-        final url = 'https://lista.mercadolivre.com.br/${Uri.encodeComponent(code)}';
-        await _openUrl(url);
+        if (parsed.productId != null) {
+          await _openUrl(parsed.mlbProductUrl);
+        } else {
+          await _openUrl(parsed.mlbSearchUrl);
+        }
         _resetScanner();
         break;
 
       case AutoSearchTarget.shopee:
-        final url = 'https://shopee.com.br/search?keyword=${Uri.encodeComponent(code)}';
-        await _openUrl(url);
+        await _openUrl(parsed.shopeeProductUrl);
+        _resetScanner();
+        break;
+
+      case AutoSearchTarget.tiktok:
+        await _openUrl(parsed.tiktokProductUrl);
         _resetScanner();
         break;
 
       case AutoSearchTarget.google:
-        final url = 'https://www.google.com/search?q=${Uri.encodeComponent(code)}';
-        await _openUrl(url);
+        await _openUrl(parsed.googleSearchUrl);
         _resetScanner();
         break;
 
       case AutoSearchTarget.ask:
-        _showProductResultModal(code);
+        _showProductResultModal(parsed);
         break;
     }
   }
@@ -112,7 +154,30 @@ class _UniversalProductScannerPageState
     });
   }
 
-  void _showProductResultModal(String code) {
+  void _showProductResultModal(ParsedProductCode parsed) {
+    final hasId = parsed.productId != null;
+
+    String platformBadgeText;
+    Color platformBadgeColor;
+    switch (parsed.platform) {
+      case PlatformType.mercadoLivre:
+        platformBadgeText = 'Mercado Livre detectado';
+        platformBadgeColor = const Color(0xFFFFE600);
+        break;
+      case PlatformType.shopee:
+        platformBadgeText = 'Shopee detectada';
+        platformBadgeColor = Colors.deepOrangeAccent;
+        break;
+      case PlatformType.tiktok:
+        platformBadgeText = 'TikTok Shop detectado';
+        platformBadgeColor = const Color(0xFFFE2C55);
+        break;
+      case PlatformType.unknown:
+        platformBadgeText = '';
+        platformBadgeColor = Colors.transparent;
+        break;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -131,7 +196,7 @@ class _UniversalProductScannerPageState
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Código Identificado',
+                    hasId ? 'Produto Identificado' : 'Código Identificado',
                     style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -151,37 +216,134 @@ class _UniversalProductScannerPageState
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.white24),
               ),
-              child: SelectableText(
-                code,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (platformBadgeText.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      margin: const EdgeInsets.only(bottom: 6),
+                      decoration: BoxDecoration(
+                        color: platformBadgeColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: platformBadgeColor),
+                      ),
+                      child: Text(
+                        platformBadgeText,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: platformBadgeColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (hasId) ...[
+                    Row(
+                      children: [
+                        const Icon(Icons.check_circle_outline, color: Colors.amberAccent, size: 18),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: SelectableText(
+                            'ID: ${parsed.formattedMlbId ?? parsed.productId}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.amberAccent,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (parsed.shopId != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'Shop ID: ${parsed.shopId}',
+                        style: const TextStyle(fontSize: 12, color: Colors.white70),
+                      ),
+                    ],
+                    const SizedBox(height: 4),
+                    Text(
+                      'Código lido: ${parsed.raw}',
+                      style: const TextStyle(fontSize: 12, color: Colors.white60),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ] else ...[
+                    SelectableText(
+                      parsed.raw,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ],
               ),
             ),
             const SizedBox(height: 16),
+            // Botão Mercado Livre
             ElevatedButton.icon(
-              icon: const Icon(Icons.shopping_bag, color: Colors.yellow),
-              label: const Text('Pesquisar no Mercado Livre'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFE600),
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              icon: const Icon(Icons.shopping_bag, color: Colors.black),
+              label: Text(
+                hasId
+                    ? 'Abrir no Mercado Livre (${parsed.formattedMlbId ?? parsed.productId})'
+                    : 'Pesquisar no Mercado Livre',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               onPressed: () {
                 Navigator.of(ctx).pop();
-                _openUrl('https://lista.mercadolivre.com.br/${Uri.encodeComponent(code)}');
+                _openUrl(hasId ? parsed.mlbProductUrl : parsed.mlbSearchUrl);
               },
             ),
             const SizedBox(height: 8),
+            // Botão Shopee
             ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrange),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepOrange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
               icon: const Icon(Icons.shopping_cart, color: Colors.white),
-              label: const Text('Pesquisar na Shopee'),
+              label: Text(
+                parsed.shopId != null && hasId
+                    ? 'Abrir Produto na Shopee'
+                    : (hasId ? 'Abrir/Buscar ID na Shopee' : 'Pesquisar na Shopee'),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               onPressed: () {
                 Navigator.of(ctx).pop();
-                _openUrl('https://shopee.com.br/search?keyword=${Uri.encodeComponent(code)}');
+                _openUrl(parsed.shopeeProductUrl);
               },
             ),
             const SizedBox(height: 8),
+            // Botão TikTok Shop
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFE2C55),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              icon: const Icon(Icons.music_note, color: Colors.white),
+              label: Text(
+                hasId ? 'Abrir no TikTok Shop (${parsed.productId})' : 'Pesquisar no TikTok',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                _openUrl(parsed.tiktokProductUrl);
+              },
+            ),
+            const SizedBox(height: 8),
+            // Botão Google
             OutlinedButton.icon(
               icon: const Icon(Icons.search),
-              label: const Text('Pesquisar no Google'),
+              label: Text(hasId ? 'Pesquisar ID no Google' : 'Pesquisar no Google'),
               onPressed: () {
                 Navigator.of(ctx).pop();
-                _openUrl('https://www.google.com/search?q=${Uri.encodeComponent(code)}');
+                _openUrl(parsed.googleSearchUrl);
               },
             ),
           ],
@@ -195,7 +357,7 @@ class _UniversalProductScannerPageState
     return Scaffold(
       drawer: const NavigationDrawerWidget(),
       appBar: AppBar(
-        title: const Text('Verificador Automático'),
+        title: const Text('Verificar Produto / QR'),
         actions: [
           IconButton(
             icon: const Icon(Icons.flash_on),
@@ -287,11 +449,15 @@ class _UniversalProductScannerPageState
                         items: const [
                           DropdownMenuItem(
                             value: AutoSearchTarget.mercadoLivre,
-                            child: Text('🟡 Mercado Livre'),
+                            child: Text('🟡 Mercado Livre (Abrir ID / Buscar)'),
                           ),
                           DropdownMenuItem(
                             value: AutoSearchTarget.shopee,
-                            child: Text('🟠 Shopee'),
+                            child: Text('🟠 Shopee (Abrir ID / Buscar)'),
+                          ),
+                          DropdownMenuItem(
+                            value: AutoSearchTarget.tiktok,
+                            child: Text('🔴 TikTok Shop (Abrir ID / Buscar)'),
                           ),
                           DropdownMenuItem(
                             value: AutoSearchTarget.google,
@@ -326,7 +492,7 @@ class _UniversalProductScannerPageState
               child: Text(
                 _isProcessing
                   ? 'Processando e abrindo produto...'
-                  : 'Aponte para o código. Ele pesquisa automaticamente no app/site!',
+                  : 'Aponte para o QR Code ou código. Abre direto pelo ID no Mercado Livre, Shopee ou TikTok!',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.white70, fontSize: 12),
               ),

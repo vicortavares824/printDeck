@@ -17,6 +17,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mobileraker/routing/app_router.dart';
 import 'package:mobileraker/ui/screens/printers/add/printers_add_controller.dart';
 import 'package:mobileraker/ui/screens/printers/components/http_headers.dart';
 import 'package:mobileraker/ui/screens/printers/components/section_header.dart';
@@ -32,7 +34,16 @@ class PrinterAddPage extends HookConsumerWidget {
     // TabController tabController = useTabController(initialLength: 2);
     var nonSupError = ref.watch(printerAddViewControllerProvider.select((value) => value.nonSupporterError));
     return Scaffold(
-      appBar: AppBar(title: const Text('pages.printer_add.title').tr()),
+      appBar: AppBar(
+        title: const Text('pages.printer_add.title').tr(),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.sync_alt),
+            tooltip: 'Importar / Exportar JSON',
+            onPressed: () => context.pushNamed(AppRoute.printerImportExport.name),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: (nonSupError != null)
             ? Center(
