@@ -46,8 +46,15 @@ import 'package:mobileraker_pro/spoolman/dto/spool.dart';
 import 'package:mobileraker_pro/spoolman/dto/vendor.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../ui/screens/files/details/video_player_page.dart';
 import '../ui/screens/tools/tool_page.dart';
+import '../features/supply_hub/presentation/screens/supply_hub_page.dart';
+import '../features/auth/presentation/screens/login_page.dart';
+import '../features/auth/presentation/screens/register_page.dart';
+import '../features/auth/presentation/screens/forgot_password_page.dart';
+import '../features/auth/presentation/screens/profile_page.dart';
 
 part 'app_router.g.dart';
 
@@ -78,7 +85,12 @@ enum AppRoute implements RouteDefinitionMixin {
   spoolman_filamentDetails,
   localStock,
   productScanner,
-  printerImportExport;
+  printerImportExport,
+  supplyHub,
+  login,
+  register,
+  forgotPassword,
+  profile;
 }
 
 @riverpod
@@ -97,18 +109,55 @@ Future<String> initialRoute(InitialRouteRef ref) async {
   return '/';
 }
 
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen(
+          (dynamic _) => notifyListeners(),
+        );
+  }
+
+  late final StreamSubscription<dynamic> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
+
 GoRouter goRouterImpl(GoRouterRef ref) {
+  final authStream = FirebaseAuth.instance.authStateChanges();
+  final refreshListenable = GoRouterRefreshStream(authStream);
+  ref.onDispose(refreshListenable.dispose);
+
   return GoRouter(
     initialLocation: ref.watch(initialRouteProvider).requireValue,
     debugLogDiagnostics: false,
     observers: [
       FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
     ],
-    // redirect: (state) {
-    //
-    //   return null;
-    // },
-    // refreshListenable: GoRouterRefreshStream(authRepository.authStateChanges()),
+    refreshListenable: refreshListenable,
+    redirect: (context, state) {
+      final user = FirebaseAuth.instance.currentUser;
+      final location = state.location;
+      final isLoggingIn = location == '/login';
+      final isRegistering = location == '/register';
+      final isResettingPassword = location == '/forgot-password';
+      final isAuthRoute = isLoggingIn || isRegistering || isResettingPassword;
+
+      // Se deslogado, permite apenas rotas públicas de autenticação; caso contrário, vai para o login
+      if (user == null) {
+        return isAuthRoute ? null : '/login';
+      }
+
+      // Se logado e tentar acessar rotas de autenticação (login, cadastro), redireciona para a home
+      if (isAuthRoute) {
+        return '/';
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/',
@@ -294,6 +343,31 @@ GoRouter goRouterImpl(GoRouterRef ref) {
         path: '/printer/import-export',
         name: AppRoute.printerImportExport.name,
         builder: (context, state) => const PrinterImportExportPage(),
+      ),
+      GoRoute(
+        path: '/supply-hub',
+        name: AppRoute.supplyHub.name,
+        builder: (context, state) => const SupplyHubPage(),
+      ),
+      GoRoute(
+        path: '/login',
+        name: AppRoute.login.name,
+        builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: '/register',
+        name: AppRoute.register.name,
+        builder: (context, state) => const RegisterPage(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        name: AppRoute.forgotPassword.name,
+        builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
+        path: '/profile',
+        name: AppRoute.profile.name,
+        builder: (context, state) => const ProfilePage(),
       ),
     ],
     // errorBuilder: (context, state) => const NotFoundScreen(),

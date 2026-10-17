@@ -10,6 +10,9 @@ enum PlatformType {
 class ParsedProductCode {
   final String raw;
   final String? productId;
+  final String? itemId;
+  final String? catalogId;
+  final String? productTitle;
   final String? shopId;
   final String? formattedMlbId;
   final String? type;
@@ -19,6 +22,9 @@ class ParsedProductCode {
   const ParsedProductCode({
     required this.raw,
     this.productId,
+    this.itemId,
+    this.catalogId,
+    this.productTitle,
     this.shopId,
     this.formattedMlbId,
     this.type,
@@ -30,10 +36,20 @@ class ParsedProductCode {
   bool get isShopee => platform == PlatformType.shopee;
   bool get isTikTok => platform == PlatformType.tiktok;
 
-  String get searchTerm => productId ?? raw;
+  String get searchTerm => productTitle ?? itemId ?? catalogId ?? productId ?? raw;
 
   String get mlbProductUrl {
-    final id = formattedMlbId ?? (productId != null ? 'MLB-$productId' : raw);
+    if (catalogId != null && itemId == null) {
+      final clean = catalogId!.replaceAll('-', '');
+      return 'https://www.mercadolivre.com.br/p/$clean';
+    }
+    if (formattedMlbId != null) {
+      return 'https://produto.mercadolivre.com.br/$formattedMlbId';
+    }
+    if (directUrl != null && (directUrl!.toLowerCase().contains('mercadolivre.com') || directUrl!.toLowerCase().contains('mercadolibre.com'))) {
+      return directUrl!;
+    }
+    final id = formattedMlbId ?? (productId != null ? (productId!.toUpperCase().startsWith('MLB') ? productId! : 'MLB-$productId') : raw);
     return 'https://produto.mercadolivre.com.br/$id';
   }
 
@@ -81,12 +97,57 @@ ParsedProductCode parseProductCode(String raw) {
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     final lower = trimmed.toLowerCase();
     if (lower.contains('mercadolivre.com') || lower.contains('mercadolibre.com')) {
-      final mlbMatch = RegExp(r'MLB-?(\d+)', caseSensitive: false).firstMatch(trimmed);
-      final id = mlbMatch?.group(1);
+      String? extractedItemId;
+      String? extractedCatalogId;
+      String? extractedTitle;
+
+      // a) Procurar item_id em parâmetros de busca (ex: pdp_filters=item_id:MLB4790249909 ou item_id=MLB... ou item_id:123...)
+      final itemIdParamMatch = RegExp(r'(?:item_id|itemid|item)[:=]([a-zA-Z0-9_-]+)', caseSensitive: false).firstMatch(trimmed);
+      if (itemIdParamMatch != null) {
+        extractedItemId = itemIdParamMatch.group(1);
+      }
+
+      // b) Procurar catálogo ou UP ID (ex: /up/MLBU4127265954 ou /p/MLB123456 ou /up/1234)
+      final catalogMatch = RegExp(r'/(?:up|p)/([a-zA-Z0-9_-]+)', caseSensitive: false).firstMatch(trimmed);
+      if (catalogMatch != null) {
+        extractedCatalogId = catalogMatch.group(1);
+      }
+
+      // c) Tentar extrair título amigável a partir do slug do caminho
+      try {
+        final uri = Uri.parse(trimmed);
+        for (final seg in uri.pathSegments) {
+          if (seg.contains('-') && !seg.toUpperCase().startsWith('MLB') && seg != 'up' && seg != 'p') {
+            extractedTitle = seg
+                .split('-')
+                .where((w) => w.isNotEmpty)
+                .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase())
+                .join(' ');
+            break;
+          }
+        }
+      } catch (_) {}
+
+      // d) Se não achou itemId específico pelo param, verificar padrão MLB-123456789 no slug
+      if (extractedItemId == null) {
+        final mlbDirectMatch = RegExp(r'(MLB-?\d+)', caseSensitive: false).firstMatch(trimmed);
+        if (mlbDirectMatch != null && mlbDirectMatch.group(1) != extractedCatalogId) {
+          extractedItemId = mlbDirectMatch.group(1);
+        }
+      }
+
+      // Determinar o primaryId
+      final primaryId = extractedItemId ?? extractedCatalogId;
+      final digitsMatch = primaryId != null ? RegExp(r'\d+').firstMatch(primaryId) : null;
+      final productId = digitsMatch?.group(0) ?? primaryId;
+
       return ParsedProductCode(
         raw: trimmed,
-        productId: id,
-        formattedMlbId: id != null ? 'MLB-$id' : null,
+        productId: productId,
+        itemId: extractedItemId,
+        catalogId: extractedCatalogId,
+        productTitle: extractedTitle,
+        formattedMlbId: primaryId != null ? _formatMlbId(primaryId) : null,
         platform: PlatformType.mercadoLivre,
         directUrl: trimmed,
       );
@@ -98,6 +159,7 @@ ParsedProductCode parseProductCode(String raw) {
       return ParsedProductCode(
         raw: trimmed,
         productId: pId,
+        itemId: pId,
         shopId: sId,
         platform: PlatformType.shopee,
         directUrl: trimmed,
@@ -108,6 +170,7 @@ ParsedProductCode parseProductCode(String raw) {
       return ParsedProductCode(
         raw: trimmed,
         productId: id,
+        itemId: id,
         platform: PlatformType.tiktok,
         directUrl: trimmed,
       );
@@ -119,7 +182,7 @@ ParsedProductCode parseProductCode(String raw) {
   try {
     final decoded = jsonDecode(trimmed);
     if (decoded is Map) {
-      dynamic findKey(List<String> candidates) {
+      Object? findKey(List<String> candidates) {
         for (final entry in decoded.entries) {
           final keyNorm = entry.key.toString().replaceAll('_', '').toLowerCase();
           for (final c in candidates) {
@@ -131,10 +194,10 @@ ParsedProductCode parseProductCode(String raw) {
         return null;
       }
 
-      final dynamic rawId = findKey(['id', 'itemId', 'productId']);
-      final dynamic rawShopId = findKey(['shopId']);
-      final dynamic rawType = findKey(['t', 'type', 'platform', 'sp']);
-      final dynamic rawUrl = findKey(['url', 'link', 'deeplink', 'fallbackUrl']);
+      final rawId = findKey(['id', 'itemId', 'productId', 'catalogId']);
+      final rawShopId = findKey(['shopId']);
+      final rawType = findKey(['t', 'type', 'platform', 'sp']);
+      final rawUrl = findKey(['url', 'link', 'deeplink', 'fallbackUrl']);
 
       final idStr = rawId?.toString().trim();
       final shopIdStr = rawShopId?.toString().trim();
@@ -161,9 +224,12 @@ ParsedProductCode parseProductCode(String raw) {
       }
 
       if (idStr != null || shopIdStr != null || urlStr != null) {
+        final isCatalog = idStr != null && idStr.toUpperCase().startsWith('MLBU');
         return ParsedProductCode(
           raw: trimmed,
           productId: idStr,
+          itemId: (platform == PlatformType.mercadoLivre && !isCatalog) ? idStr : null,
+          catalogId: isCatalog ? idStr : null,
           shopId: shopIdStr,
           formattedMlbId: idStr != null ? _formatMlbId(idStr) : null,
           type: typeStr,
@@ -176,8 +242,24 @@ ParsedProductCode parseProductCode(String raw) {
     // Caso JSON estrito falhe, tentar via Regex
   }
 
-  // 3. Regex fallback para JSON solto / aspas simples
-  final idMatch = RegExp(r'''["']?(?:id|item_?id|product_?id)["']?\s*:\s*["']?([a-zA-Z0-9_-]+)["']?''', caseSensitive: false).firstMatch(trimmed);
+  // 3. String com prefixo explícito de identificador (ex: "item_id: MLB4790249909" ou "item_id:MLBU4127265954" ou "item_id=...")
+  final itemIdPrefixMatch = RegExp(r'^(?:item_?id|pdp_filters=item_?id)[:=\s]+([a-zA-Z0-9_-]+)$', caseSensitive: false).firstMatch(trimmed);
+  if (itemIdPrefixMatch != null) {
+    final id = itemIdPrefixMatch.group(1)!;
+    final isCatalog = id.toUpperCase().startsWith('MLBU');
+    final digits = RegExp(r'\d+').firstMatch(id)?.group(0);
+    return ParsedProductCode(
+      raw: trimmed,
+      productId: digits ?? id,
+      itemId: !isCatalog ? id : null,
+      catalogId: isCatalog ? id : null,
+      formattedMlbId: _formatMlbId(id),
+      platform: PlatformType.mercadoLivre,
+    );
+  }
+
+  // 4. Regex fallback para JSON solto / aspas simples
+  final idMatch = RegExp(r'''["']?(?:id|item_?id|product_?id|catalog_?id)["']?\s*:\s*["']?([a-zA-Z0-9_-]+)["']?''', caseSensitive: false).firstMatch(trimmed);
   final shopMatch = RegExp(r'''["']?shop_?id["']?\s*:\s*["']?([a-zA-Z0-9_-]+)["']?''', caseSensitive: false).firstMatch(trimmed);
   final typeMatch = RegExp(r'''["']?(?:t|type|platform)["']?\s*:\s*["']?([a-zA-Z0-9_-]+)["']?''', caseSensitive: false).firstMatch(trimmed);
 
@@ -198,9 +280,13 @@ ParsedProductCode parseProductCode(String raw) {
       platform = PlatformType.tiktok;
     }
 
+    final isCatalog = idStr != null && idStr.toUpperCase().startsWith('MLBU');
+
     return ParsedProductCode(
       raw: trimmed,
       productId: idStr,
+      itemId: (platform == PlatformType.mercadoLivre && !isCatalog) ? idStr : null,
+      catalogId: isCatalog ? idStr : null,
       shopId: shopIdStr,
       formattedMlbId: idStr != null ? _formatMlbId(idStr) : null,
       type: typeStr,
@@ -208,14 +294,18 @@ ParsedProductCode parseProductCode(String raw) {
     );
   }
 
-  // 4. Código direto do Mercado Livre (ex: MLB-48214515581 ou MLB48214515581)
-  final mlbMatch = RegExp(r'^MLB-?(\d+)$', caseSensitive: false).firstMatch(trimmed);
+  // 5. Código direto do Mercado Livre (ex: MLB-48214515581, MLB48214515581, MLBU4127265954, MLBU-4127265954)
+  final mlbMatch = RegExp(r'^(MLB[Uu]?)-?(\d+)$', caseSensitive: false).firstMatch(trimmed);
   if (mlbMatch != null) {
-    final digits = mlbMatch.group(1)!;
+    final prefix = mlbMatch.group(1)!.toUpperCase();
+    final digits = mlbMatch.group(2)!;
+    final isCatalog = prefix.startsWith('MLBU');
     return ParsedProductCode(
       raw: trimmed,
       productId: digits,
-      formattedMlbId: 'MLB-$digits',
+      itemId: !isCatalog ? '$prefix$digits' : null,
+      catalogId: isCatalog ? '$prefix$digits' : null,
+      formattedMlbId: '$prefix-$digits',
       platform: PlatformType.mercadoLivre,
     );
   }
@@ -226,11 +316,15 @@ ParsedProductCode parseProductCode(String raw) {
 
 String _formatMlbId(String idStr) {
   final upper = idStr.toUpperCase();
-  if (upper.startsWith('MLB-')) {
+  if (upper.startsWith('MLBU-')) {
+    return 'MLBU-${idStr.substring(5)}';
+  } else if (upper.startsWith('MLBU')) {
+    return 'MLBU-${idStr.substring(4)}';
+  } else if (upper.startsWith('MLB-')) {
     return 'MLB-${idStr.substring(4)}';
   } else if (upper.startsWith('MLB')) {
     return 'MLB-${idStr.substring(3)}';
-  } else if (RegExp(r'^[A-Z]{3}-?\d+$', caseSensitive: false).hasMatch(idStr)) {
+  } else if (RegExp(r'^[A-Z]{3,4}-?\d+$', caseSensitive: false).hasMatch(idStr)) {
     return idStr;
   }
   return 'MLB-$idStr';

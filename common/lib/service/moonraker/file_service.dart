@@ -268,8 +268,7 @@ class FileService {
       // logger.i('blub');
       // yield await download;
 
-      // This code is not using a seperate isolate. Lets see how it goes lol
-
+      await file.parent.create(recursive: true);
       StreamController<FileDownload> ctrler = StreamController();
       _dio.download(
         '/server/files/$filePath',

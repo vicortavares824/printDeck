@@ -123,5 +123,49 @@ void main() {
       expect(result.mlbSearchUrl, 'https://lista.mercadolivre.com.br/7891234567890');
       expect(result.searchTerm, '7891234567890');
     });
+
+    test('parses full Mercado Livre URL with up catalog and pdp_filters item_id', () {
+      const url =
+          'https://www.mercadolivre.com.br/kit-05-cortador-de-biscoito-cookie-pilates-academia-fitness/up/MLBU4127265954?pdp_filters=item_id:MLB4790249909';
+      final result = parseProductCode(url);
+
+      expect(result.isMercadoLivre, isTrue);
+      expect(result.itemId, 'MLB4790249909');
+      expect(result.catalogId, 'MLBU4127265954');
+      expect(result.formattedMlbId, 'MLB-4790249909');
+      expect(result.productTitle, contains('Cortador De Biscoito'));
+      expect(result.mlbProductUrl, 'https://produto.mercadolivre.com.br/MLB-4790249909');
+      expect(result.directUrl, url);
+    });
+
+    test('parses direct string with item_id prefix', () {
+      const code = 'item_id: MLB4790249909';
+      final result = parseProductCode(code);
+
+      expect(result.isMercadoLivre, isTrue);
+      expect(result.itemId, 'MLB4790249909');
+      expect(result.formattedMlbId, 'MLB-4790249909');
+      expect(result.mlbProductUrl, 'https://produto.mercadolivre.com.br/MLB-4790249909');
+    });
+
+    test('parses direct MLBU catalog id string', () {
+      const code = 'MLBU4127265954';
+      final result = parseProductCode(code);
+
+      expect(result.isMercadoLivre, isTrue);
+      expect(result.catalogId, 'MLBU4127265954');
+      expect(result.formattedMlbId, 'MLBU-4127265954');
+      expect(result.mlbProductUrl, 'https://www.mercadolivre.com.br/p/MLBU4127265954');
+    });
+
+    test('parses direct string with item_id: MLBU4127265954', () {
+      const code = 'item_id: MLBU4127265954';
+      final result = parseProductCode(code);
+
+      expect(result.isMercadoLivre, isTrue);
+      expect(result.catalogId, 'MLBU4127265954');
+      expect(result.formattedMlbId, 'MLBU-4127265954');
+      expect(result.mlbProductUrl, 'https://www.mercadolivre.com.br/p/MLBU4127265954');
+    });
   });
 }

@@ -71,6 +71,7 @@ class IsSearching extends _$IsSearching {
   }
 
   void toggle() => state = !state;
+  void setSearching(bool value) => state = value;
 }
 
 @riverpod

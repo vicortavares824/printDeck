@@ -434,6 +434,10 @@ class PrinterService {
     _jRpcClient.sendJRpcMethod('printer.print.start', params: {'filename': file.pathForPrint}).ignore();
   }
 
+  Future<void> startPrint(String filename) async {
+    await _jRpcClient.sendJRpcMethod('printer.print.start', params: {'filename': filename});
+  }
+
   resetPrintStat() {
     gCode('SDCARD_RESET_FILE');
   }

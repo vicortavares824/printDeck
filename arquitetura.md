@@ -3,6 +3,8 @@ rodar flutter run -d RX8RC0BK9LT
 
 criar apk : flutter build apk --release
 
+flutter run --debug --flavor production
+
 
 # Arquitetura do PrintDeck
 

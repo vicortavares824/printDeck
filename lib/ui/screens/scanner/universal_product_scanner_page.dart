@@ -1,8 +1,11 @@
 import 'package:common/ui/components/drawer/nav_drawer_view.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../files/files_controller.dart';
 import 'product_code_parser.dart';
 
 enum AutoSearchTarget {
@@ -13,16 +16,16 @@ enum AutoSearchTarget {
   google,
 }
 
-class UniversalProductScannerPage extends StatefulWidget {
+class UniversalProductScannerPage extends ConsumerStatefulWidget {
   const UniversalProductScannerPage({super.key});
 
   @override
-  State<UniversalProductScannerPage> createState() =>
+  ConsumerState<UniversalProductScannerPage> createState() =>
       _UniversalProductScannerPageState();
 }
 
 class _UniversalProductScannerPageState
-    extends State<UniversalProductScannerPage> {
+    extends ConsumerState<UniversalProductScannerPage> {
   final MobileScannerController _controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.normal,
     facing: CameraFacing.back,
@@ -63,7 +66,7 @@ class _UniversalProductScannerPageState
       if (_autoTarget == AutoSearchTarget.ask) {
         _showProductResultModal(parsed);
       } else {
-        await _openUrl(parsed.productId != null ? parsed.mlbProductUrl : parsed.mlbSearchUrl);
+        await _openUrl(parsed.mlbProductUrl);
         _resetScanner();
       }
       return;
@@ -238,16 +241,27 @@ class _UniversalProductScannerPageState
                       ),
                     ),
                   ],
-                  if (hasId) ...[
+                  if (parsed.productTitle != null) ...[
+                    Text(
+                      parsed.productTitle!,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                  ],
+                  if (parsed.itemId != null) ...[
                     Row(
                       children: [
-                        const Icon(Icons.check_circle_outline, color: Colors.amberAccent, size: 18),
+                        const Icon(Icons.tag, color: Colors.amberAccent, size: 18),
                         const SizedBox(width: 6),
                         Expanded(
                           child: SelectableText(
-                            'ID: ${parsed.formattedMlbId ?? parsed.productId}',
+                            'Item ID: ${parsed.itemId}',
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: Colors.amberAccent,
                             ),
@@ -255,30 +269,74 @@ class _UniversalProductScannerPageState
                         ),
                       ],
                     ),
+                    const SizedBox(height: 4),
+                  ],
+                  if (parsed.catalogId != null) ...[
+                    Row(
+                      children: [
+                        const Icon(Icons.inventory, color: Colors.cyanAccent, size: 18),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: SelectableText(
+                            'Catálogo / UP ID: ${parsed.catalogId}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.cyanAccent,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                  if (!hasId && parsed.productTitle == null) ...[
+                    SelectableText(
+                      parsed.raw,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ] else ...[
                     if (parsed.shopId != null) ...[
-                      const SizedBox(height: 2),
                       Text(
                         'Shop ID: ${parsed.shopId}',
                         style: const TextStyle(fontSize: 12, color: Colors.white70),
                       ),
+                      const SizedBox(height: 2),
                     ],
-                    const SizedBox(height: 4),
                     Text(
-                      'Código lido: ${parsed.raw}',
-                      style: const TextStyle(fontSize: 12, color: Colors.white60),
+                      'Código/URL: ${parsed.raw}',
+                      style: const TextStyle(fontSize: 11, color: Colors.white60),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                    ),
-                  ] else ...[
-                    SelectableText(
-                      parsed.raw,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ],
               ),
             ),
             const SizedBox(height: 16),
+            // Botão Buscar no PrintDeck (Arquivos G-Code)
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(ctx).colorScheme.primary,
+                foregroundColor: Theme.of(ctx).colorScheme.onPrimary,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              icon: const Icon(Icons.search),
+              label: Text(
+                'Buscar G-Code no PrintDeck (${parsed.itemId ?? parsed.catalogId ?? parsed.searchTerm})',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                final query = parsed.itemId ?? parsed.catalogId ?? parsed.searchTerm;
+                ref.read(isSearchingProvider.notifier).setSearching(true);
+                ref.read(searchTextEditingControllerProvider).text = query;
+                context.go('/files');
+              },
+            ),
+            const SizedBox(height: 8),
             // Botão Mercado Livre
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
@@ -289,13 +347,13 @@ class _UniversalProductScannerPageState
               icon: const Icon(Icons.shopping_bag, color: Colors.black),
               label: Text(
                 hasId
-                    ? 'Abrir no Mercado Livre (${parsed.formattedMlbId ?? parsed.productId})'
+                    ? 'Abrir no Mercado Livre (${parsed.itemId ?? parsed.catalogId ?? parsed.formattedMlbId ?? parsed.productId})'
                     : 'Pesquisar no Mercado Livre',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               onPressed: () {
                 Navigator.of(ctx).pop();
-                _openUrl(hasId ? parsed.mlbProductUrl : parsed.mlbSearchUrl);
+                _openUrl(parsed.mlbProductUrl);
               },
             ),
             const SizedBox(height: 8),

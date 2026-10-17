@@ -34,6 +34,7 @@ import 'package:mobileraker_pro/service/ui/pro_sheet_type.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../routing/app_router.dart';
+import '../../../../service/file_download_helper.dart';
 
 part 'gcode_file_details_page.freezed.dart';
 part 'gcode_file_details_page.g.dart';
@@ -88,7 +89,7 @@ class _GCodeFileDetailPage extends HookConsumerWidget {
             return SliverAppBar(
               expandedHeight: 220,
               floating: true,
-              actions: const [_PreHeatBtn()],
+              actions: const [_DownloadBtn(), _PreHeatBtn()],
               flexibleSpace: FlexibleSpaceBar(
                 collapseMode: CollapseMode.pin,
                 background: Stack(alignment: Alignment.center, children: [
@@ -302,6 +303,25 @@ class _Fab extends ConsumerWidget {
       onPressed: (canStartPrint) ? controller.onStartPrintTap : null,
       icon: const Icon(FlutterIcons.printer_3d_nozzle_mco),
       label: const Text('pages.files.details.print').tr(),
+    );
+  }
+}
+
+class _DownloadBtn extends ConsumerWidget {
+  const _DownloadBtn({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    var file = ref.watch(gcodeProvider);
+
+    return IconButton(
+      onPressed: () => FileDownloadHelper.downloadFileWithProgress(
+        context: context,
+        ref: ref,
+        file: file,
+      ),
+      icon: const Icon(Icons.download_rounded),
+      tooltip: 'Baixar arquivo G-Code',
     );
   }
 }

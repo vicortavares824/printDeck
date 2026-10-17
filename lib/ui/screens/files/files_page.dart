@@ -38,6 +38,8 @@ import 'package:mobileraker/ui/screens/files/files_controller.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../service/file_download_helper.dart';
+import 'components/universal_gcode_test_dialog.dart';
 import '../../components/connection/machine_connection_guard.dart';
 
 class FilesPage extends ConsumerWidget {
@@ -148,7 +150,7 @@ class _AppBar extends HookConsumerWidget implements PreferredSizeWidget {
       return AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => ref.read(isSearchingProvider.notifier).state = false,
+          onPressed: () => ref.read(isSearchingProvider.notifier).setSearching(false),
         ),
         title: EaseIn(
           curve: Curves.easeOutCubic,
@@ -183,10 +185,18 @@ class _AppBar extends HookConsumerWidget implements PreferredSizeWidget {
             ref.watch(selectedMachineProvider).valueOrFullNull,
           ),
         ),
+        IconButton(
+          icon: const Icon(Icons.science_outlined),
+          tooltip: 'Testar G-Code Universal',
+          onPressed: () => showDialog(
+            context: context,
+            builder: (_) => const UniversalGcodeTestDialog(),
+          ),
+        ),
         const FileSortModeSelector(),
         IconButton(
           icon: const Icon(Icons.search),
-          onPressed: areFilesReady ? () => ref.read(isSearchingProvider.notifier).state = true : null,
+          onPressed: areFilesReady ? () => ref.read(isSearchingProvider.notifier).setSearching(true) : null,
         ),
       ],
     );
@@ -771,6 +781,17 @@ class _Slideable extends ConsumerWidget {
       endActionPane: ActionPane(
         motion: const StretchMotion(),
         children: [
+          SlidableAction(
+            onPressed: (_) => FileDownloadHelper.downloadFileWithProgress(
+              context: context,
+              ref: ref,
+              file: file,
+            ),
+            backgroundColor: themeData.colorScheme.tertiaryContainer,
+            foregroundColor: themeData.colorScheme.onTertiaryContainer,
+            icon: Icons.download_rounded,
+            label: 'Download',
+          ),
           SlidableAction(
             // An action can be bigger than the others.
             onPressed: (_) => controller.onRenameTapped(file),

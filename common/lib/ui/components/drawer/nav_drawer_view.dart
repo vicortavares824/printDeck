@@ -5,6 +5,7 @@
 
 import 'package:common/data/model/hive/machine.dart';
 import 'package:common/service/app_router.dart';
+import 'package:common/service/firebase/auth.dart';
 import 'package:common/service/firebase/remote_config.dart';
 import 'package:common/service/machine_service.dart';
 import 'package:common/service/selected_machine_service.dart';
@@ -27,8 +28,6 @@ class NavigationDrawerWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var themeData = Theme.of(context);
-
     return Drawer(
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -85,11 +84,29 @@ class NavigationDrawerWidget extends ConsumerWidget {
                       icon: Icons.qr_code_scanner,
                       routeName: '/product-scanner',
                     ),
+                    const _DrawerItem(
+                      text: 'SupplyHub • Almoxarifado',
+                      icon: Icons.shopping_cart_outlined,
+                      routeName: '/supply-hub',
+                    ),
                     const Divider(),
                     _DrawerItem(
                       text: 'pages.setting.title'.tr(),
                       icon: Icons.engineering_outlined,
                       routeName: '/setting',
+                    ),
+                    _DrawerItem(
+                      text: ref.watch(firebaseUserProvider).valueOrNull != null
+                          ? (ref.watch(firebaseUserProvider).valueOrNull?.displayName?.isNotEmpty == true
+                              ? ref.watch(firebaseUserProvider).valueOrNull!.displayName!
+                              : (ref.watch(firebaseUserProvider).valueOrNull?.email ?? 'Meu Perfil'))
+                          : 'Minha Conta / Entrar',
+                      icon: ref.watch(firebaseUserProvider).valueOrNull != null
+                          ? Icons.account_circle
+                          : Icons.account_circle_outlined,
+                      routeName: ref.watch(firebaseUserProvider).valueOrNull != null
+                          ? '/profile'
+                          : '/login',
                     ),
                     const Divider(),
                     const _DrawerItem(
