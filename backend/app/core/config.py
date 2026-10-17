@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     CLOUD_API_KEY: str | None = "printdeck-secret-token"
     PRINTER_ID: str = "printer_01"
 
+    SUPPLY_HUB_PUBLIC_READ: bool = True
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 

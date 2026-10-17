@@ -4,11 +4,17 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import Base, engine
 from app.routers.printer import router as printer_router
+from app.routers.supplies import router as supplies_router
+from app.routers.sync import router as sync_router
+
+# Import all models so SQLAlchemy registers them before create_all
+import app.models.printer  # noqa: F401
+import app.models.supply_item  # noqa: F401
+import app.models.app_sync  # noqa: F401
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Cria as tabelas no SQLite automaticamente ao iniciar o app
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
@@ -16,12 +22,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="PrintDeck API",
-    description="Backend integrador para Klipper/Moonraker e Spoolman com SQLite",
-    version="1.0.0",
+    description="Backend integrador para Klipper/Moonraker, Spoolman e SupplyHub com PostgreSQL",
+    version="2.0.0",
     lifespan=lifespan,
 )
 
-# Habilitar CORS para permitir requisições do Flutter e navegadores
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -31,6 +36,8 @@ app.add_middleware(
 )
 
 app.include_router(printer_router)
+app.include_router(supplies_router)
+app.include_router(sync_router)
 
 
 @app.get("/")
@@ -39,4 +46,5 @@ async def root():
         "app": "PrintDeck API",
         "docs": "/docs",
         "status": "online",
+        "modules": ["printer", "spoolman", "supply_hub", "sync"],
     }

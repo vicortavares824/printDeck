@@ -1,23 +1,34 @@
+import 'package:common/service/selected_machine_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class CloudSyncButton extends StatefulWidget {
+class CloudSyncButton extends HookConsumerWidget {
   const CloudSyncButton({
     super.key,
-    this.backendUrl = 'http://10.0.2.2:8000', // 10.0.2.2 para emulador Android ou IP do PC para celular
+    this.cloudApiUrl = 'https://printdeck-cloud.onrender.com',
+    this.apiKey = 'printdeck-V2Niche',
   });
 
-  final String backendUrl;
+  final String cloudApiUrl;
+  final String apiKey;
 
-  @override
-  State<CloudSyncButton> createState() => _CloudSyncButtonState();
-}
+  Future<void> _syncToCloud(BuildContext context, WidgetRef ref) async {
+    if (cloudApiUrl.isEmpty) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.amber,
+          behavior: SnackBarBehavior.floating,
+          content: Text('Configure a URL da Cloud API (cloudApiUrl)'),
+        ),
+      );
+      return;
+    }
 
-class _CloudSyncButtonState extends State<CloudSyncButton> {
-  bool _isLoading = false;
-
-  Future<void> _syncToCloud() async {
-    setState(() => _isLoading = true);
+    final machine = ref.read(selectedMachineProvider).valueOrNull;
+    final printerId = machine?.name ?? 'sem-impressora';
 
     try {
       final dio = Dio(
@@ -27,12 +38,25 @@ class _CloudSyncButtonState extends State<CloudSyncButton> {
         ),
       );
 
-      // Chama o endpoint de sincronização no backend local
-      final response = await dio.post('${widget.backendUrl}/api/cloud/sync');
+      final base = cloudApiUrl.replaceAll(RegExp(r'/+$'), '');
 
-      if (!mounted) return;
+      final response = await dio.post(
+        '$base/api/telemetry',
+        data: {
+          'printer_id': printerId,
+          'state': 'online',
+          'progress': 0.0,
+          'current_file': null,
+          'nozzle_temp': 0.0,
+          'bed_temp': 0.0,
+          'filament': null,
+        },
+        options: Options(headers: {'x-api-key': apiKey}),
+      );
 
-      if (response.statusCode == 200) {
+      if (!context.mounted) return;
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: Colors.green,
@@ -50,7 +74,7 @@ class _CloudSyncButtonState extends State<CloudSyncButton> {
         throw Exception('Status ${response.statusCode}');
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.redAccent,
@@ -59,21 +83,19 @@ class _CloudSyncButtonState extends State<CloudSyncButton> {
             children: [
               const Icon(Icons.cloud_off, color: Colors.white),
               const SizedBox(width: 8),
-              Expanded(child: Text('Erro ao sincronizar: $e')),
+              Expanded(child: Text('Erro ao sincronizar com a nuvem: $e')),
             ],
           ),
         ),
       );
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
     }
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isLoading = useState(false);
+
+    if (isLoading.value) {
       return const Padding(
         padding: EdgeInsets.symmetric(horizontal: 12.0),
         child: SizedBox(
@@ -90,7 +112,12 @@ class _CloudSyncButtonState extends State<CloudSyncButton> {
     return IconButton(
       tooltip: 'Sincronizar com a Nuvem',
       icon: const Icon(Icons.cloud_upload_outlined),
-      onPressed: _syncToCloud,
+      onPressed: () async {
+        if (isLoading.value) return;
+        isLoading.value = true;
+        await _syncToCloud(context, ref);
+        if (context.mounted) isLoading.value = false;
+      },
     );
   }
 }

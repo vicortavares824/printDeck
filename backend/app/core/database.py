@@ -4,11 +4,17 @@ from sqlalchemy.orm import declarative_base
 
 from app.core.config import settings
 
-# Engine assíncrono para SQLite
+database_url = settings.DATABASE_URL
+
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif database_url.startswith("postgresql://"):
+    database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    database_url,
     echo=False,
-    connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {},
+    connect_args={"check_same_thread": False} if "sqlite" in database_url else {},
 )
 
 AsyncSessionLocal = async_sessionmaker(
