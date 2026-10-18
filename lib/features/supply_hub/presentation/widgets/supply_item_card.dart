@@ -74,8 +74,9 @@ class SupplyItemCard extends ConsumerWidget {
                     color: theme.colorScheme.error.withOpacity(0.7),
                   ),
                   tooltip: 'Remover Item',
-                  onPressed: () {
-                    notifier.removeItem(item.id);
+                  onPressed: () async {
+                    await notifier.removeItemWithCloud(item.id);
+                    if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Item "${item.title}" removido.'),

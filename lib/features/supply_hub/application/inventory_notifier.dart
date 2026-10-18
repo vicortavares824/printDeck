@@ -2,10 +2,13 @@ import 'dart:math';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../domain/models/supply_item.dart';
+import 'supply_api_service.dart';
 
 /// StateNotifier responsável pelo gerenciamento de estado do almoxarifado/compras.
 class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
-  InventoryNotifier([List<SupplyItem>? initialItems])
+  final SupplyApiService? _apiService;
+
+  InventoryNotifier([List<SupplyItem>? initialItems, this._apiService])
       : super(initialItems ?? const <SupplyItem>[]);
 
   /// Gera um identificador único seguro sem dependências externas adicionais
@@ -20,7 +23,7 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
   void addItem({
     required String title,
     required String description,
-    int quantity = 1,
+    required int quantity,
   }) {
     final sanitizedTitle = title.trim();
     final sanitizedDescription = description.trim();
@@ -59,6 +62,8 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
 
       state = [newItem, ...state];
     }
+
+    _pushToCloud();
   }
 
   /// Incrementa a quantidade do item especificado pelo ID.
@@ -70,6 +75,8 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
         else
           item,
     ];
+
+    _pushToCloud();
   }
 
   /// Decrementa a quantidade do item especificado pelo ID, respeitando o mínimo de 1.
@@ -81,6 +88,8 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
         else
           item,
     ];
+
+    _pushToCloud();
   }
 
   /// Alterna o status do item entre pendente/a comprar e comprado.
@@ -92,18 +101,55 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
         else
           item,
     ];
+
+    _pushToCloud();
   }
 
   /// Remove um item completamente do inventário.
   void removeItem(String id) {
     state = state.where((item) => item.id != id).toList();
+
+    _pushToCloud();
+  }
+
+  /// Envia a lista local para a nuvem (disparo silencioso, não bloqueia a UI).
+  Future<void> _pushToCloud() async {
+    final api = _apiService;
+    if (api == null) return;
+    try {
+      await api.pushItems(state);
+    } catch (e) {
+      // Falha silenciosa: a nuvem pode estar fora do ar; o dado fica salvo localmente.
+    }
+  }
+
+  /// Puxa os itens da nuvem e substitui a lista local.
+  Future<void> pullFromCloud() async {
+    final api = _apiService;
+    if (api == null) return;
+    final cloudItems = await api.pullItems();
+    state = cloudItems;
+  }
+
+  /// Deleta um item localmente e na nuvem.
+  Future<void> removeItemWithCloud(String id) async {
+    state = state.where((item) => item.id != id).toList();
+    final api = _apiService;
+    if (api != null) {
+      try {
+        await api.deleteItem(id);
+      } catch (e) {
+        // Falha silenciosa
+      }
+    }
   }
 }
 
-/// Provider global para gerenciar a lista de suprimentos
+/// Provider global para gerenciar a lista de suprimentos (com serviço de API injetado).
 final inventoryNotifierProvider =
     StateNotifierProvider<InventoryNotifier, List<SupplyItem>>((ref) {
-  return InventoryNotifier();
+  final apiService = ref.watch(supplyApiServiceProvider);
+  return InventoryNotifier(null, apiService);
 });
 
 /// Provider derivado para itens pendentes ("A Comprar / Salvos")

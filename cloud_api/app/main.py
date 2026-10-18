@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.core.database import Base, engine, get_db
 from app.models.telemetry import CloudPrintJob, PrinterTelemetry
 from app.schemas.telemetry import CloudJobIn, CloudJobOut, TelemetryIn, TelemetryOut
+from app.routers import supply as supply_router
 
 
 @asynccontextmanager
@@ -32,6 +33,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(supply_router.router)
 
 
 def verify_secret(x_api_key: str | None = Header(default=None)):

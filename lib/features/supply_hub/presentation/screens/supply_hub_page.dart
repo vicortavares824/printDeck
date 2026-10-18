@@ -8,11 +8,53 @@ import '../../domain/models/supply_item.dart';
 import '../widgets/supply_item_card.dart';
 import 'add_supply_item_page.dart';
 
-class SupplyHubPage extends ConsumerWidget {
+class SupplyHubPage extends ConsumerStatefulWidget {
   const SupplyHubPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SupplyHubPage> createState() => _SupplyHubPageState();
+}
+
+class _SupplyHubPageState extends ConsumerState<SupplyHubPage> {
+  bool _isSyncing = false;
+
+  Future<void> _syncFromCloud() async {
+    setState(() => _isSyncing = true);
+    try {
+      await ref.read(inventoryNotifierProvider.notifier).pullFromCloud();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Almoxarifado sincronizado com a nuvem!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao sincronizar com a nuvem: $e'),
+          backgroundColor: Colors.redAccent,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSyncing = false);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Tenta puxar os itens da nuvem ao abrir a página
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncFromCloud();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final pendingItems = ref.watch(pendingSupplyItemsProvider);
     final boughtItems = ref.watch(boughtSupplyItemsProvider);
     final theme = Theme.of(context);
@@ -23,6 +65,15 @@ class SupplyHubPage extends ConsumerWidget {
         drawer: const NavigationDrawerWidget(),
         appBar: AppBar(
           title: const Text('SupplyHub • Almoxarifado'),
+          actions: [
+            IconButton(
+              icon: _isSyncing
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.cloud_sync),
+              onPressed: _isSyncing ? null : _syncFromCloud,
+              tooltip: 'Sincronizar com a nuvem',
+            ),
+          ],
           bottom: TabBar(
             indicatorWeight: 3,
             labelStyle: const TextStyle(fontWeight: FontWeight.bold),
