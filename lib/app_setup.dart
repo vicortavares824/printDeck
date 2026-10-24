@@ -202,6 +202,7 @@ Future<List<Box>> openBoxes() {
     Hive.openBox('settingsbox'),
     Hive.openBox<Notification>('notifications'),
     Hive.openBox<DashboardLayout>('dashboard_layouts'),
+    Hive.openBox<String>('supply_hub_items'),
     // Hive.openBox<OctoEverywhere>('octo', encryptionCipher: HiveAesCipher(keyMaterial))
   ]);
 }
@@ -214,6 +215,7 @@ Future<void> deleteBoxes() {
     Hive.deleteBoxFromDisk('settingsbox'),
     Hive.deleteBoxFromDisk('notifications'),
     Hive.deleteBoxFromDisk('dashboard_layouts'),
+    Hive.deleteBoxFromDisk('supply_hub_items'),
     // Hive.deleteBoxFromDisk('octo')
   ]);
 }
