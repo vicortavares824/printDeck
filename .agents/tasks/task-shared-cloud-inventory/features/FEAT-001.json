@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Backend: convert the /api/supply API (cloud_api/app) from per-device partitioning to ONE shared/global cloud inventory with a non-destructive per-item upsert sync. Independent of FEAT-002 in code; they share only the HTTP contract, which this feature keeps shape-stable. Do FIRST so the client (FEAT-002) can be validated against the real shared-scope contract.",
+  "status": "completed",
+  "steps": [
+    "In cloud_api/app/routers/supply.py add a module-level constant SHARED_SCOPE = \"__shared__\" and a short comment: inventory is a single shared/global scope; last-write-wins by updated_at is acceptable for v1; /sync is a per-item upsert and MUST NEVER bulk-delete the shared scope.",
+    "Rewrite POST /api/supply/sync (sync_supply_items): REMOVE the 'delete(CloudSupplyItem).where(device_id==data.device_id)' bulk delete. For each item in data.items, look up an existing row by item_id within SHARED_SCOPE (select ... where device_id==SHARED_SCOPE and item_id==item.item_id); if found, update title/description(or '')/quantity/is_bought and set updated_at=datetime.utcnow(); if not found, insert a new CloudSupplyItem(device_id=SHARED_SCOPE, item_id=..., ...). Commit once. Return {\"synced\": len(data.items)}. data.device_id is accepted but ignored for scoping.",
+    "Rewrite GET /api/supply/items (list_supply_items): keep accepting the device_id query param for contract stability but IGNORE it for scoping; return all rows where device_id == SHARED_SCOPE (the whole shared inventory).",
+    "Rewrite DELETE /api/supply/items/{item_id} (delete_supply_item): keep accepting the device_id query param but DO NOT scope by it; delete the row where item_id==item_id and device_id==SHARED_SCOPE; 404 if not found.",
+    "Do NOT modify cloud_api/app/models/supply.py schema (keep the device_id column to avoid a destructive migration; create_all cannot ALTER an existing table). No Alembic migration for the app/ model.",
+    "Update cloud_api/README_API.md: add a section documenting the REAL client contract GET/POST/DELETE under /api/supply (shared global scope, per-item non-destructive upsert, x-api-key auth, device_id accepted-but-ignored-for-scoping), and a NOTE that the live service runs 'uvicorn app.main:app' while render.yaml's startCommand points at 'src.main:app' (which does NOT serve /api/supply), so any redeploy must run app.main:app.",
+    "Record in the FEAT findings the exact SHARED_SCOPE value and the final endpoint behaviors so FEAT-002 can rely on them."
+  ],
+  "acceptance_criteria": [
+    "POST /api/supply/sync performs a per-item upsert into the shared scope and NEVER deletes rows that are absent from the payload.",
+    "GET /api/supply/items returns the entire shared inventory regardless of the device_id query value.",
+    "DELETE /api/supply/items/{item_id} removes the item from the shared scope regardless of device_id.",
+    "Items POSTed as 'device A' are returned when GET is called as 'device B' (shared visibility).",
+    "The HTTP contract shape is unchanged (same paths, same JSON field names; device_id still accepted).",
+    "No schema migration is introduced and cloud_api/src and cloud_api/alembic and the sibling backend/ project are untouched.",
+    "README_API.md documents the /api/supply shared-scope contract and the app.main vs render.yaml startCommand mismatch."
+  ],
+  "verification": [
+    "From cloud_api/: python -m py_compile app/routers/supply.py app/models/supply.py app/schemas/supply.py (no errors).",
+    "From cloud_api/: start 'uvicorn app.main:app --port 8000' against default SQLite; with header 'x-api-key: printdeck-V2Niche' POST /api/supply/sync as device A {device_id:'A',items:[{item_id:'i1',title:'A1'}]} and as device B {device_id:'B',items:[{item_id:'i2',title:'B1'}]}; assert GET /api/supply/items?device_id=anything returns BOTH i1 and i2.",
+    "Re-POST /api/supply/sync with device_id:'A', items:[] and assert GET still returns i1 and i2 (non-destructive).",
+    "DELETE /api/supply/items/i1?device_id=anything then GET and assert i1 is gone and i2 remains."
+  ],
+  "blocked_reason": null,
+  "findings": "SHARED_SCOPE constant value = \"__shared__\" (module-level in cloud_api/app/routers/supply.py). All shared inventory rows are stored with CloudSupplyItem.device_id == \"__shared__\". The cloud_supply_items table schema is UNCHANGED (device_id column kept; no migration). Final endpoint behaviors (all under prefix /api/supply, auth via header x-api-key == API_SECRET_KEY; default local key used in tests = 'printdeck-V2Niche'): GET /api/supply/items?device_id=<any> -> still REQUIRES the device_id query param (contract shape unchanged) but IGNORES it for scoping; returns the ENTIRE shared inventory (all rows where device_id == SHARED_SCOPE) as List[SupplyItemOut] (fields: id, item_id, title, description, quantity, is_bought, updated_at). POST /api/supply/sync with body {device_id:<any, ignored for scope>, items:[SupplyItemIn...]} -> per-item UPSERT into SHARED_SCOPE keyed by item_id: existing row (device_id==SHARED_SCOPE and item_id match) is updated (title, description or '', quantity, is_bought, updated_at=datetime.utcnow()); otherwise a new row is inserted with device_id=SHARED_SCOPE. Single commit. NON-DESTRUCTIVE: items absent from the payload are NEVER deleted; an empty items:[] payload deletes nothing. Returns {\"synced\": len(items)}. DELETE /api/supply/items/{item_id}?device_id=<any, ignored> -> deletes the row where item_id==item_id AND device_id==SHARED_SCOPE; returns {\"deleted\": true} on success or HTTP 404 {detail:'Item não encontrado'} if absent. HTTP contract shape (paths, methods, JSON field names, device_id still accepted) is fully preserved for FEAT-002. Verification: py_compile of app/routers/supply.py + app/models/supply.py + app/schemas/supply.py passed (exit 0); live uvicorn app.main:app SQLite smoke test PASSED all assertions — shared visibility (device A i1 + device B i2 both returned on GET as 'anything'), non-destructive empty sync (i1,i2 retained), upsert-in-place (no duplicate, title/quantity updated), shared delete (i1 removed for everyone, i2 remained), and 404 on deleting a missing item. cloud_api/src, cloud_api/alembic, and backend/ were NOT touched; render.yaml was NOT edited. README_API.md documents the /api/supply shared-scope contract and the app.main:app vs render.yaml src.main:app startCommand mismatch (redeploy must run app.main:app or /api/supply stops being served)."
+}
