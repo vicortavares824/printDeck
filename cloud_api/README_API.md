@@ -102,3 +102,42 @@ Consequencia: qualquer redeploy que use o `startCommand` atual do `render.yaml`
 derrubaria o `/api/supply`. Qualquer redeploy deve executar **`app.main:app`** para
 manter o contrato do cliente funcionando. (O `render.yaml` nao e alterado aqui; esta
 nota documenta o mismatch.)
+
+## Supply - Posse (ownership) e acesso Admin
+
+O inventario e compartilhado (todos veem tudo), mas a edicao/exclusao e controlada por
+posse: **cada item tem um `owner_id` = o `device_id` de quem o criou**. Regras:
+
+- Um dispositivo comum so pode ALTERAR/EXCLUIR itens cujo `owner_id` seja o seu proprio
+  `device_id`. Itens de outras pessoas sao somente leitura para ele.
+- Um **admin** (dispositivo que apresenta o codigo correto) pode alterar/excluir
+  QUALQUER item.
+- Itens legados sem `owner_id` (NULL) so podem ser alterados/excluidos por admin.
+
+O `owner_id` e sempre derivado no servidor a partir do `device_id` que esta agindo
+(no INSERT via `/sync`); o cliente NAO pode definir/forjar o dono.
+
+### Header de admin
+Envie `x-admin-code: <ADMIN_CODE>` nas requisicoes para agir como admin. O codigo e um
+segredo de backend configurado pela variavel de ambiente `ADMIN_CODE`. Vazio ou
+`disabled` desliga o acesso admin (nunca concedido). O codigo nao e registrado em log.
+
+### POST /api/supply/admin/verify
+Valida o codigo de admin antes de o cliente armazena-lo. Requer `x-api-key` e
+`x-admin-code`. Retorna `200 { "admin": true }` quando o codigo confere; `403` caso
+contrario.
+
+### Autorizacao por rota
+- **POST /api/supply/sync**: autorizacao POR ITEM (nao 403 no lote inteiro). Ao inserir
+  um item novo, `owner_id` passa a ser o `device_id` que esta agindo. Ao atualizar um
+  item existente, so e permitido se o dispositivo for o dono OU admin; caso contrario o
+  item e ignorado e seu `item_id` volta em `forbidden`. Resposta agora inclui
+  `forbidden`: `{ "synced": <n>, "forbidden": [<item_id>, ...] }`.
+- **DELETE /api/supply/items/{item_id}**: permitido so ao dono do item ou a um admin;
+  caso contrario retorna `403`. `404` continua valendo quando o item nao existe.
+- **GET /api/supply/items**: inalterado, mas cada item agora inclui `owner_id`.
+
+> Observacao de schema: a coluna `owner_id` (nullable) foi adicionada a
+> `cloud_supply_items`. Como o app cria tabelas via `Base.metadata.create_all` (sem
+> ALTER de tabela existente), bancos JA criados precisam da coluna adicionada
+> manualmente (ou recriados em dev); bancos novos ja nascem com ela.

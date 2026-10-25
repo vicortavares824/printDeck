@@ -7,26 +7,32 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../domain/models/supply_item.dart';
 import 'supply_api_service.dart';
 
-/// StateNotifier responsável pelo gerenciamento de estado do almoxarifado/compras.
+/// Erro lancado quando este dispositivo tenta alterar/excluir um item que nao
+/// criou (e nao e admin). A UI deve impedir essa acao, mas o notifier tambem
+/// se protege para nunca corromper o estado compartilhado.
+class NotOwnerException implements Exception {
+  NotOwnerException([this.message = 'Apenas o criador do item pode altera-lo.']);
+  final String message;
+  @override
+  String toString() => message;
+}
+
+/// StateNotifier responsavel pelo gerenciamento de estado do almoxarifado/compras.
 ///
-/// Offline-first: cada mutação é persistida no box Hive local antes/independente
-/// da rede. Falhas de push não apagam o dado local — os ids tocados ficam
-/// marcados como pendentes e são reenviados na próxima sincronização.
+/// Offline-first: cada mutacao e persistida no box Hive local antes/independente
+/// da rede. Falhas de push nao apagam o dado local.
+///
+/// Posse (ownership): o inventario e compartilhado (todos veem tudo), mas cada
+/// pessoa so pode editar/excluir os itens que criou (ownerId == deviceId deste
+/// dispositivo). Um admin (codigo verificado no backend) pode alterar qualquer
+/// item. Regra aplicada tambem no backend (fonte da verdade da autorizacao).
 class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
   final SupplyApiService? _apiService;
 
-  /// Nome do box Hive que guarda os itens do almoxarifado (fonte da verdade
-  /// local, sobrevive a reinicializações do app). Espelha o padrão de
-  /// [lib/service/local_filament_stock_service.dart].
   static const String boxName = 'supply_hub_items';
-
-  /// Chave reservada dentro do box para a lista (JSON) de ids pendentes de push.
   static const String _pendingKey = '__pending__';
 
-  /// Ids de itens que ainda não foram sincronizados com sucesso na nuvem.
   final Set<String> _pendingSync = <String>{};
-
-  /// Mensagem não-bloqueante do último erro de sincronização (null se nenhum).
   String? _syncError;
 
   InventoryNotifier([List<SupplyItem>? initialItems, this._apiService])
@@ -34,17 +40,36 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
     _loadFromHive();
   }
 
-  /// Quantidade de itens aguardando push para a nuvem (leitura não-bloqueante
-  /// que a UI pode exibir).
   int get pendingCount => _pendingSync.length;
-
-  /// Último erro de sincronização (não-bloqueante). Null quando não há erro.
   String? get syncError => _syncError;
 
-  /// Carrega os itens do box local no construtor, protegido por
-  /// `Hive.isBoxOpen` para ser um no-op quando o box não está aberto
-  /// (ex.: caminho de teste, onde o `InventoryNotifier()` sem args deve iniciar
-  /// vazio).
+  String? get _deviceId {
+    if (_apiService == null) return null;
+    try {
+      return SupplyApiService.deviceId;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool get isAdmin {
+    try {
+      return SupplyApiService.isAdmin;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Regra de posse para UI/estado: pode alterar/excluir se for admin, se o item
+  /// ainda nao tem dono conhecido (null => recem-criado local), ou se o dono e
+  /// este dispositivo. Itens de outro device sao somente leitura.
+  bool canModify(SupplyItem item) {
+    if (isAdmin) return true;
+    final me = _deviceId;
+    if (item.ownerId == null) return true;
+    return me != null && item.ownerId == me;
+  }
+
   void _loadFromHive() {
     if (!Hive.isBoxOpen(boxName)) return;
     final box = Hive.box<String>(boxName);
@@ -67,29 +92,20 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
     }
   }
 
-  /// Obtém o box local, ou null quando ele não está aberto (ex.: caminho de
-  /// teste, onde o Hive não é inicializado). O box é aberto no startup do app
-  /// (`openBoxes()` em app_setup.dart), então em produção já está aberto. Todo
-  /// acesso ao Hive é guardado por `Hive.isBoxOpen` para ser um no-op seguro
-  /// quando o box não está disponível.
   Box<String>? _box() {
     if (!Hive.isBoxOpen(boxName)) return null;
     return Hive.box<String>(boxName);
   }
 
-  /// Persiste (upsert) um item no box local.
   Future<void> _persistItem(SupplyItem item) async {
     final box = _box();
     if (box == null) return;
     await box.put(item.id, jsonEncode(item.toJson()));
   }
 
-  /// Persiste a lista inteira de itens no box local (usado após um merge).
   Future<void> _persistAll(List<SupplyItem> items) async {
     final box = _box();
     if (box == null) return;
-    // Remove apenas as entradas de item (preserva a chave de pendências) que
-    // não existem mais no estado.
     final currentIds = items.map((e) => e.id).toSet();
     final staleKeys = box.keys
         .where((k) => k != _pendingKey && !currentIds.contains(k))
@@ -102,29 +118,34 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
     }
   }
 
-  /// Remove um item do box local.
-  Future<void> _deleteItem(String id) async {
+  Future<void> _deleteLocal(String id) async {
     final box = _box();
     if (box == null) return;
     await box.delete(id);
   }
 
-  /// Persiste o conjunto de ids pendentes no box local.
   Future<void> _persistPending() async {
     final box = _box();
     if (box == null) return;
     await box.put(_pendingKey, jsonEncode(_pendingSync.toList()));
   }
 
-  /// Gera um identificador único seguro sem dependências externas adicionais
   String _generateUniqueId() {
     final timestamp = DateTime.now().microsecondsSinceEpoch;
     final randomSuffix = Random().nextInt(999999).toString().padLeft(6, '0');
     return 'item_${timestamp}_$randomSuffix';
   }
 
-  /// Adiciona um novo item ou incrementa a quantidade caso já exista pelo título.
-  /// Se o item já existir no catálogo/comprado, soma a quantidade e define `isBought = false`.
+  SupplyItem? _requireModifiable(String id) {
+    final idx = state.indexWhere((item) => item.id == id);
+    if (idx == -1) return null;
+    final item = state[idx];
+    if (!canModify(item)) {
+      throw NotOwnerException();
+    }
+    return item;
+  }
+
   void addItem({
     required String title,
     required String description,
@@ -135,7 +156,7 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
     final validQuantity = quantity > 0 ? quantity : 1;
 
     if (sanitizedTitle.isEmpty) {
-      throw ArgumentError('O título do item não pode ser vazio.');
+      throw ArgumentError('O titulo do item nao pode ser vazio.');
     }
 
     final normalizedNewTitle = sanitizedTitle.toLowerCase();
@@ -146,9 +167,12 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
     final SupplyItem touchedItem;
     if (existingIndex != -1) {
       final existingItem = state[existingIndex];
+      if (!canModify(existingItem)) {
+        throw NotOwnerException();
+      }
       final updatedItem = existingItem.copyWith(
         quantity: existingItem.quantity + validQuantity,
-        isBought: false, // Reativa o item se estiver comprado
+        isBought: false,
         description: sanitizedDescription.isNotEmpty
             ? sanitizedDescription
             : existingItem.description,
@@ -165,6 +189,7 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
         description: sanitizedDescription,
         quantity: validQuantity,
         isBought: false,
+        ownerId: _deviceId,
       );
 
       state = [newItem, ...state];
@@ -175,100 +200,84 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
     _pushToCloud([touchedItem.id]);
   }
 
-  /// Incrementa a quantidade do item especificado pelo ID.
   void incrementQuantity(String id) {
+    final item = _requireModifiable(id);
+    if (item == null) return;
     state = [
-      for (final item in state)
-        if (item.id == id)
-          item.copyWith(quantity: item.quantity + 1)
-        else
-          item,
+      for (final it in state)
+        if (it.id == id) it.copyWith(quantity: it.quantity + 1) else it,
     ];
-
     _persistTouched(id);
     _pushToCloud([id]);
   }
 
-  /// Decrementa a quantidade do item especificado pelo ID, respeitando o mínimo de 1.
   void decrementQuantity(String id) {
+    final item = _requireModifiable(id);
+    if (item == null) return;
     state = [
-      for (final item in state)
-        if (item.id == id && item.quantity > 1)
-          item.copyWith(quantity: item.quantity - 1)
+      for (final it in state)
+        if (it.id == id && it.quantity > 1)
+          it.copyWith(quantity: it.quantity - 1)
         else
-          item,
+          it,
     ];
-
     _persistTouched(id);
     _pushToCloud([id]);
   }
 
-  /// Alterna o status do item entre pendente/a comprar e comprado.
   void toggleBoughtStatus(String id) {
+    final item = _requireModifiable(id);
+    if (item == null) return;
     state = [
-      for (final item in state)
-        if (item.id == id)
-          item.copyWith(isBought: !item.isBought)
-        else
-          item,
+      for (final it in state)
+        if (it.id == id) it.copyWith(isBought: !it.isBought) else it,
     ];
-
     _persistTouched(id);
     _pushToCloud([id]);
   }
 
-  /// Remove um item completamente do inventário.
   void removeItem(String id) {
-    state = state.where((item) => item.id != id).toList();
-
+    final item = _requireModifiable(id);
+    if (item == null) return;
+    state = state.where((it) => it.id != id).toList();
     _pendingSync.remove(id);
-    _deleteItem(id);
+    _deleteLocal(id);
     _persistPending();
     _pushToCloud([]);
   }
 
-  /// Persiste localmente o item de [id] a partir do estado atual.
   void _persistTouched(String id) {
     final idx = state.indexWhere((item) => item.id == id);
     if (idx == -1) return;
     _persistItem(state[idx]);
   }
 
-  /// Envia a lista local para a nuvem (disparo silencioso, não bloqueia a UI).
-  ///
-  /// [touchedIds] são os ids modificados nesta operação; em caso de falha eles
-  /// (mais quaisquer pendentes anteriores) permanecem marcados como pendentes
-  /// para reenvio na próxima sincronização. Nada é perdido: o dado já está no
-  /// box local.
   Future<void> _pushToCloud(List<String> touchedIds) async {
     final api = _apiService;
     if (api == null) return;
     try {
-      await api.pushItems(state);
-      // Sucesso: limpa pendências e erro.
-      if (_pendingSync.isNotEmpty) {
-        _pendingSync.clear();
+      final result = await api.pushItems(state);
+      if (result.forbidden.isNotEmpty) {
+        _syncError =
+            'Alguns itens nao sao seus e nao foram salvos: ${result.forbidden.length}.';
+      } else {
+        _syncError = null;
+      }
+      // Push bem-sucedido: tudo que era nosso subiu e os recusados (forbidden)
+      // nao sao nossos para reenviar. Limpa e persiste as pendencias de forma
+      // incondicional para que ids obsoletos nao sobrevivam a um restart.
+      final hadPending = _pendingSync.isNotEmpty;
+      _pendingSync.clear();
+      if (hadPending) {
         await _persistPending();
       }
-      _syncError = null;
     } catch (e) {
-      // Falha: o dado continua salvo localmente no box Hive. Marcamos os ids
-      // tocados como pendentes para retry na próxima sincronização e expomos
-      // um sinal não-bloqueante para a UI (nenhuma exceção propaga).
       _pendingSync.addAll(touchedIds);
       _syncError = e.toString();
       await _persistPending();
     }
   }
 
-  /// Puxa os itens da nuvem e faz um merge NÃO-destrutivo por item_id.
-  ///
-  /// Regra do merge: unimos a lista local e a da nuvem por item_id. A nuvem é
-  /// autoritativa para ids já sincronizados (presentes no box como não
-  /// pendentes). Um item criado offline e ainda não enviado (id em
-  /// `_pendingSync`) NUNCA é descartado — o estado local vence e ele é
-  /// reenviado logo em seguida. Após o merge, a lista resultante é persistida
-  /// no box local e os itens ainda pendentes são reenviados.
   Future<void> pullFromCloud() async {
     final api = _apiService;
     if (api == null) return;
@@ -278,13 +287,7 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
     final localById = {for (final item in state) item.id: item};
 
     final mergedById = <String, SupplyItem>{};
-
-    // 1) Começa com tudo que veio da nuvem (autoritativo para ids sincronizados).
     mergedById.addAll(cloudById);
-
-    // 2) Itens locais pendentes (criados/alterados offline) vencem a nuvem e
-    //    nunca são perdidos — mesmo que a nuvem não os conheça ou os conheça
-    //    desatualizados.
     for (final entry in localById.entries) {
       if (_pendingSync.contains(entry.key)) {
         mergedById[entry.key] = entry.value;
@@ -293,20 +296,20 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
 
     final merged = mergedById.values.toList();
     state = merged;
-
     await _persistAll(merged);
 
-    // Reenvia o que ainda estiver pendente após o merge.
     if (_pendingSync.isNotEmpty) {
       await _pushToCloud(_pendingSync.toList());
     }
   }
 
-  /// Deleta um item localmente e na nuvem.
   Future<void> removeItemWithCloud(String id) async {
-    state = state.where((item) => item.id != id).toList();
+    final item = _requireModifiable(id);
+    if (item == null) return;
+
+    state = state.where((it) => it.id != id).toList();
     _pendingSync.remove(id);
-    await _deleteItem(id);
+    await _deleteLocal(id);
     await _persistPending();
 
     final api = _apiService;
@@ -315,28 +318,38 @@ class InventoryNotifier extends StateNotifier<List<SupplyItem>> {
         await api.deleteItem(id);
         _syncError = null;
       } catch (e) {
-        // Falha ao deletar na nuvem: o item já foi removido localmente; apenas
-        // registramos o erro de forma não-bloqueante.
         _syncError = e.toString();
       }
     }
   }
+
+  Future<bool> loginAsAdmin(String code) async {
+    final api = _apiService;
+    if (api == null) return false;
+    final ok = await api.verifyAdminCode(code);
+    if (ok) {
+      state = [...state];
+    }
+    return ok;
+  }
+
+  void logoutAdmin() {
+    _apiService?.logoutAdmin();
+    state = [...state];
+  }
 }
 
-/// Provider global para gerenciar a lista de suprimentos (com serviço de API injetado).
 final inventoryNotifierProvider =
     StateNotifierProvider<InventoryNotifier, List<SupplyItem>>((ref) {
   final apiService = ref.watch(supplyApiServiceProvider);
   return InventoryNotifier(null, apiService);
 });
 
-/// Provider derivado para itens pendentes ("A Comprar / Salvos")
 final pendingSupplyItemsProvider = Provider<List<SupplyItem>>((ref) {
   final allItems = ref.watch(inventoryNotifierProvider);
   return allItems.where((item) => !item.isBought).toList();
 });
 
-/// Provider derivado para itens finalizados ("Comprados")
 final boughtSupplyItemsProvider = Provider<List<SupplyItem>>((ref) {
   final allItems = ref.watch(inventoryNotifierProvider);
   return allItems.where((item) => item.isBought).toList();

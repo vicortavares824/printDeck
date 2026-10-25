@@ -44,10 +44,129 @@ class _SupplyHubPageState extends ConsumerState<SupplyHubPage> {
     }
   }
 
+  Future<void> _openAdminDialog() async {
+    final notifier = ref.read(inventoryNotifierProvider.notifier);
+
+    if (notifier.isAdmin) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Sair do modo administrador'),
+          content: const Text(
+            'Voce voltara a editar apenas os itens que criou. Deseja sair?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Sair'),
+            ),
+          ],
+        ),
+      );
+      if (confirm == true) {
+        notifier.logoutAdmin();
+        if (mounted) setState(() {});
+      }
+      return;
+    }
+
+    final controller = TextEditingController();
+    var loading = false;
+    String? error;
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          title: const Text('Acesso administrador'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Digite o codigo de administrador para poder editar e excluir '
+                'qualquer item do almoxarifado compartilhado.',
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                obscureText: true,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Codigo de administrador',
+                  border: const OutlineInputBorder(),
+                  errorText: error,
+                ),
+                onSubmitted: (_) => Navigator.of(ctx).maybePop(),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: loading ? null : () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: loading
+                  ? null
+                  : () async {
+                      final code = controller.text.trim();
+                      if (code.isEmpty) {
+                        setLocal(() => error = 'Informe o codigo.');
+                        return;
+                      }
+                      setLocal(() {
+                        loading = true;
+                        error = null;
+                      });
+                      try {
+                        final granted = await notifier.loginAsAdmin(code);
+                        if (!granted) {
+                          setLocal(() {
+                            loading = false;
+                            error = 'Codigo invalido.';
+                          });
+                          return;
+                        }
+                        if (ctx.mounted) Navigator.of(ctx).pop(true);
+                      } catch (e) {
+                        setLocal(() {
+                          loading = false;
+                          error = 'Falha ao verificar: $e';
+                        });
+                      }
+                    },
+              child: loading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Entrar'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (ok == true && mounted) {
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Modo administrador ativado.'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    // Tenta puxar os itens da nuvem ao abrir a página
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _syncFromCloud();
     });
@@ -58,14 +177,23 @@ class _SupplyHubPageState extends ConsumerState<SupplyHubPage> {
     final pendingItems = ref.watch(pendingSupplyItemsProvider);
     final boughtItems = ref.watch(boughtSupplyItemsProvider);
     final theme = Theme.of(context);
+    final isAdmin = ref.read(inventoryNotifierProvider.notifier).isAdmin;
 
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         drawer: const NavigationDrawerWidget(),
         appBar: AppBar(
-          title: const Text('SupplyHub • Almoxarifado'),
+          title: const Text('SupplyHub - Almoxarifado'),
           actions: [
+            IconButton(
+              icon: Icon(
+                isAdmin ? Icons.admin_panel_settings : Icons.admin_panel_settings_outlined,
+                color: isAdmin ? Colors.amber : null,
+              ),
+              onPressed: _openAdminDialog,
+              tooltip: isAdmin ? 'Administrador (tocar para sair)' : 'Entrar como administrador',
+            ),
             IconButton(
               icon: _isSyncing
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
@@ -115,21 +243,18 @@ class _SupplyHubPageState extends ConsumerState<SupplyHubPage> {
         ),
         body: TabBarView(
           children: [
-            // Aba 1: A Comprar / Salvos
             _ItemsListTab(
               items: pendingItems,
               emptyIcon: Icons.shopping_basket_outlined,
               emptyTitle: 'Nenhum item pendente',
-              emptySubtitle: 'Sua lista de compras do almoxarifado está vazia.',
+              emptySubtitle: 'Sua lista de compras do almoxarifado esta vazia.',
               showAddButton: true,
             ),
-
-            // Aba 2: Comprados
             _ItemsListTab(
               items: boughtItems,
               emptyIcon: Icons.task_alt_outlined,
               emptyTitle: 'Nenhum item comprado ainda',
-              emptySubtitle: 'Marque os itens como "Comprado" na aba anterior para arquivá-los aqui.',
+              emptySubtitle: 'Marque os itens como "Comprado" na aba anterior para arquiva-los aqui.',
               showAddButton: false,
             ),
           ],

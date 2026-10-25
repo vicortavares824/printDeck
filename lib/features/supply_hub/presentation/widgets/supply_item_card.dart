@@ -18,6 +18,9 @@ class SupplyItemCard extends ConsumerWidget {
     final notifier = ref.read(inventoryNotifierProvider.notifier);
 
     final isBought = item.isBought;
+    // Somente o dono do item (ou um admin) pode editar/excluir. Itens de outras
+    // pessoas aparecem para todos, mas em modo somente leitura.
+    final canEdit = notifier.canModify(item);
 
     return Card(
       elevation: 1.5,
@@ -64,27 +67,58 @@ class SupplyItemCard extends ConsumerWidget {
                           ),
                         ),
                       ],
+                      if (!canEdit) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.lock_outline,
+                              size: 14,
+                              color: theme.colorScheme.onSurface.withOpacity(0.5),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Somente leitura (item de outra pessoa)',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
-                IconButton(
-                  icon: Icon(
-                    Icons.delete_outline,
-                    size: 20,
-                    color: theme.colorScheme.error.withOpacity(0.7),
+                if (canEdit)
+                  IconButton(
+                    icon: Icon(
+                      Icons.delete_outline,
+                      size: 20,
+                      color: theme.colorScheme.error.withOpacity(0.7),
+                    ),
+                    tooltip: 'Remover Item',
+                    onPressed: () async {
+                      try {
+                        await notifier.removeItemWithCloud(item.id);
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Item "${item.title}" removido.'),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Nao foi possivel remover: $e'),
+                            backgroundColor: Colors.redAccent,
+                          ),
+                        );
+                      }
+                    },
                   ),
-                  tooltip: 'Remover Item',
-                  onPressed: () async {
-                    await notifier.removeItemWithCloud(item.id);
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Item "${item.title}" removido.'),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -93,7 +127,6 @@ class SupplyItemCard extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Controle de Quantidade (+ e -)
                 Container(
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
@@ -107,7 +140,7 @@ class SupplyItemCard extends ConsumerWidget {
                         splashRadius: 18,
                         visualDensity: VisualDensity.compact,
                         tooltip: 'Diminuir Quantidade',
-                        onPressed: item.quantity > 1
+                        onPressed: (canEdit && item.quantity > 1)
                             ? () => notifier.decrementQuantity(item.id)
                             : null,
                       ),
@@ -125,16 +158,18 @@ class SupplyItemCard extends ConsumerWidget {
                         splashRadius: 18,
                         visualDensity: VisualDensity.compact,
                         tooltip: 'Aumentar Quantidade',
-                        onPressed: () => notifier.incrementQuantity(item.id),
+                        onPressed: canEdit
+                            ? () => notifier.incrementQuantity(item.id)
+                            : null,
                       ),
                     ],
                   ),
                 ),
-
-                // Botão de alternar status: "Comprado" ou "De novo" (reativar)
                 if (!isBought)
                   FilledButton.tonalIcon(
-                    onPressed: () => notifier.toggleBoughtStatus(item.id),
+                    onPressed: canEdit
+                        ? () => notifier.toggleBoughtStatus(item.id)
+                        : null,
                     icon: const Icon(Icons.check_circle_outline, size: 18),
                     label: const Text('Comprado'),
                     style: FilledButton.styleFrom(
@@ -146,7 +181,9 @@ class SupplyItemCard extends ConsumerWidget {
                   )
                 else
                   OutlinedButton.icon(
-                    onPressed: () => notifier.toggleBoughtStatus(item.id),
+                    onPressed: canEdit
+                        ? () => notifier.toggleBoughtStatus(item.id)
+                        : null,
                     icon: const Icon(Icons.replay, size: 18),
                     label: const Text('De novo'),
                     style: OutlinedButton.styleFrom(
