@@ -11,11 +11,40 @@ from app.schemas.telemetry import CloudJobIn, CloudJobOut, TelemetryIn, Telemetr
 from app.routers import supply as supply_router
 
 
+async def _ensure_supply_schema(conn):
+    # Auto-migracao idempotente: garante que a coluna owner_id exista em
+    # cloud_supply_items. create_all cria tabelas novas, mas NAO faz ALTER em
+    # tabelas que ja existem — entao um banco criado antes do controle de posse
+    # ficaria sem a coluna e o GET /api/supply/items quebraria (500). Rodamos o
+    # ADD COLUMN de forma segura em cada startup.
+    dialect = conn.dialect.name
+    try:
+        if dialect == "postgresql":
+            await conn.exec_driver_sql(
+                "ALTER TABLE cloud_supply_items ADD COLUMN IF NOT EXISTS owner_id VARCHAR"
+            )
+        elif dialect == "sqlite":
+            rows = await conn.exec_driver_sql("PRAGMA table_info(cloud_supply_items)")
+            cols = [r[1] for r in rows.fetchall()]
+            if "owner_id" not in cols:
+                await conn.exec_driver_sql(
+                    "ALTER TABLE cloud_supply_items ADD COLUMN owner_id VARCHAR"
+                )
+        else:
+            await conn.exec_driver_sql(
+                "ALTER TABLE cloud_supply_items ADD COLUMN owner_id VARCHAR"
+            )
+    except Exception:
+        # Coluna ja existe ou ajuste concorrente — seguimos sem falhar o boot.
+        pass
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Cria as tabelas automaticamente (funciona tanto no SQLite quanto no PostgreSQL do Render)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await _ensure_supply_schema(conn)
     yield
 
 
