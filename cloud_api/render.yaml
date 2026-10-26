@@ -1,11 +1,13 @@
-# render.yaml - Configuração de deploy no Render
-# Docss: https://render.com/docs/blueprint-spec
+# render.yaml - Configuracao de deploy no Render
+# Docs: https://render.com/docs/blueprint-spec
 services:
   - type: web
     name: printdeck-cloud-api
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    # IMPORTANTE: /api/supply (app Flutter), /api/telemetry e /api/jobs sao
+    # servidos por app.main:app. NAO use src.main:app (serve so /api/supply-hub).
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -14,7 +16,9 @@ services:
       - key: JWT_SECRET_KEY
         generateValue: true
       - key: API_SECRET_KEY
-        value: printdeck-secret-token
+        value: printdeck-V2Niche
+      - key: ADMIN_CODE
+        sync: false
       - key: DEBUG
         value: "false"
 
