@@ -163,7 +163,7 @@ class _Fab extends ConsumerWidget {
                   child: const Icon(Icons.restart_alt),
                   backgroundColor: themeData.colorScheme.primary,
                   foregroundColor: themeData.colorScheme.onPrimary,
-                  label: 'Save & Restart',
+                  label: 'Salvar e Reiniciar',
                   onTap: () => ref
                       .read(configFileDetailsControllerProvider.notifier)
                       .onSaveAndRestartTapped(codeController.value.text),

@@ -1,5 +1,4 @@
 rodar no emulador flutter run -d emulator-5554
-rodar flutter run -d RX8RC0BK9LT
 
 criar apk : flutter build apk --release
 

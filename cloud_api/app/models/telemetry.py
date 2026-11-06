@@ -8,6 +8,7 @@ class PrinterTelemetry(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     printer_id = Column(String, index=True, nullable=False)
+    model = Column(String, nullable=True)
     state = Column(String, default="standby")
     progress = Column(Float, default=0.0)
     current_file = Column(String, nullable=True)

@@ -1,0 +1,672 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Configurar firebase-admin e credenciais de service account": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933358594
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933371679
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934516433
+      }
+    ],
+    "1.2 Criar a dependency require_auth em app/core/auth.py": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933358849
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933372627
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934517864
+      }
+    ],
+    "2.1 Adicionar coluna model e auto-migração idempotente": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933359078
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933374027
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934519264
+      }
+    ],
+    "2.2 Persistir e expor model nos schemas e no POST /api/telemetry": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933359252
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934527297
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934691282
+      }
+    ],
+    "3.1 Criar tabela printer_reservations e schemas de reserva": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933359358
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934528255
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934692553
+      }
+    ],
+    "3.2 Implementar endpoints de ocupar e liberar": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933359429
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935086036
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935381971
+      }
+    ],
+    "4.1 Implementar GET /api/printers público com latest + merge de reserva": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933359543
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934907242
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935074384
+      }
+    ],
+    "4.2 Atualizar GET /api/telemetry/latest/{printer_id} para PrinterOut": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933359648
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935392528
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935766100
+      }
+    ],
+    "5.1 Criar tabela print_queue_items e schemas de fila": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933359754
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934529663
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934693501
+      }
+    ],
+    "5.2 Implementar GET público da Print_Queue": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933359848
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935776747
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793957352199
+      }
+    ],
+    "5.3 Implementar add e remove da Print_Queue": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933359943
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793957362641
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793960230142
+      }
+    ],
+    "5.4 Implementar reorder e mark-printed da Print_Queue": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933360038
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793960235215
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793960462547
+      }
+    ],
+    "6.1 Trocar verify_secret por require_auth no supply mantendo posse e admin": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933360133
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934703943
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934879043
+      }
+    ],
+    "7.1 Garantir registro dos novos endpoints em app/main.py": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933360248
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793960468831
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793968387546
+      }
+    ],
+    "8.1 Criar projeto web_dashboard com config isolada e validação de env": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933360365
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933374816
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934520064
+      }
+    ],
+    "9.1 Implementar apiClient (fetch base, Bearer, 401 refresh/logout, Cold_Start)": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933360490
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934531801
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934879883
+      }
+    ],
+    "10.1 Implementar AuthContext, ProtectedRoute e LoginPage": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933360596
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934905174
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935076405
+      }
+    ],
+    "11.1 Implementar usePolling (10s, 1 simultânea, para ao desmontar)": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933360702
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934906566
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935075311
+      }
+    ],
+    "12.1 Implementar availability.ts (parseUtc, deriveFreshness, deriveAvailability)": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933360818
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934531065
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934694545
+      }
+    ],
+    "13.1 Implementar printersApi e PrinterListPage/PrinterGrid/PrinterCard/ModelFilter": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933360954
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935087436
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935383339
+      }
+    ],
+    "14.1 Implementar reservationApi e ReservationControls": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933361197
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935390486
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935765028
+      }
+    ],
+    "15.1 Implementar PrinterDetailPage e JobHistoryList": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933361569
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935774628
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793957350760
+      }
+    ],
+    "16.1 Implementar queueApi e PrintQueuePanel": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933361775
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935391804
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935764086
+      }
+    ],
+    "17.1 Implementar supplyApi, SupplyPage e AdminModeControl": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933362008
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935088468
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935384108
+      }
+    ],
+    "18.1 Criar theme.css com os design tokens e importar no main.tsx": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933362249
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935776029
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793957353105
+      }
+    ],
+    "18.2 Aplicar os tokens de tema nos componentes consumidores": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933362523
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793960236309
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793960463463
+      }
+    ],
+    "19.1 Configurar rotas, AppLayout e revisar ausência de x-api-key": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933362649
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793957363558
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793960229349
+      }
+    ],
+    "20. Checkpoint final - garantir que todos os testes passam": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933362754
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793971141619
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793971207860
+      }
+    ],
+    "21.1 Criar web_dashboard/test.js como smoke de validação executável via node": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933362859
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793968393580
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793969127209
+      }
+    ],
+    "21.2 Implementar as checagens de fluxo integrado no test.js": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933362964
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793969130687
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793969971297
+      }
+    ],
+    "21.3 Executar node test.js e registrar o resultado agregado": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793933363091
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793969975187
+      },
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793971137177
+      }
+    ],
+    "1. Autenticação e autorização JWT no backend (require_auth)": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934517931
+      }
+    ],
+    "8. Scaffold do frontend React + Vite isolado": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934520127
+      }
+    ],
+    "2. Coluna model em PrinterTelemetry e auto-migração": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934691353
+      }
+    ],
+    "12. Lógica pura de disponibilidade e staleness": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934694615
+      }
+    ],
+    "6. Autorização JWT nos endpoints de estoque": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934879112
+      }
+    ],
+    "9. apiClient com Bearer, timeout, retry e refresh": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793934879955
+      }
+    ],
+    "11. Hook de polling": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935075387
+      }
+    ],
+    "10. Autenticação no frontend": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935076489
+      }
+    ],
+    "3. Reserva manual na Cloud_API": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935382077
+      }
+    ],
+    "13. Lista de impressoras no frontend": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935383422
+      }
+    ],
+    "17. Estoque no frontend": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935384201
+      }
+    ],
+    "16. Fila de impressão no frontend": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935764194
+      }
+    ],
+    "14. Reserva no frontend": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935765122
+      }
+    ],
+    "4. Printer_List_Endpoint com modelo e reserva": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793935766195
+      }
+    ],
+    "15. Detalhe da impressora": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793957350882
+      }
+    ],
+    "19. Integração final e fiação do frontend": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793960229475
+      }
+    ],
+    "5. Fila de impressão na Cloud_API": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793960462643
+      }
+    ],
+    "18. Tema azul/branco (identidade visual)": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793960463549
+      }
+    ],
+    "7. Registro e smoke dos endpoints no backend": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793968387643
+      }
+    ],
+    "21. Script de validação agregada de ponta a ponta (test.js)": [
+      {
+        "executionId": "5b4cb1c2-53d8-4af1-b271-0c717c3fd760",
+        "chatSessionId": "sess_260e28ce-c43e-4ab8-8e85-2ba810b84476",
+        "timestamp": 1793971137271
+      }
+    ]
+  }
+}

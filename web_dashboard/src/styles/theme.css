@@ -1,0 +1,1022 @@
+/**
+ * theme.css -> Identidade visual do Dashboard (AZUL + BRANCO).
+ *
+ * Define os design tokens (CSS variables em :root) e estilos base que os consomem.
+ * Ver design.md -> "## Identidade Visual (Tema)". Regras principais:
+ *  - Branco = superfícies de conteúdo (cartões, painéis, formulários).
+ *  - Azul = marca/interação (cabeçalho, botões primários, links, foco, estados ativos).
+ *  - Verde/vermelho = SINALIZAÇÃO DE ESTADO (Availability_State), NUNCA trocados por azul.
+ *  - Contraste WCAG AA: texto normal >= 4.5:1; texto grande >= 3:1.
+ *
+ * Importado uma única vez em src/main.tsx. Os componentes consomem via var(--color-*),
+ * sem cores fixas (hard-coded).
+ */
+
+:root {
+  /* Marca / interação (AZUL) */
+  --color-primary: #1565c0; /* azul primário: cabeçalho, botões, links, ativos, foco */
+  --color-primary-hover: #0d47a1; /* azul mais escuro para hover/pressionado */
+  --color-primary-subtle: #e3f2fd; /* azul bem claro para realces/fundos sutis e seleção */
+
+  /* Superfícies / texto / bordas (BRANCO + neutros) */
+  --color-surface: #ffffff; /* fundo de cartões, painéis e conteúdo */
+  --color-background: #f5f8fc; /* fundo geral da aplicação (branco levemente azulado) */
+  --color-text: #1a2733; /* texto principal */
+  --color-text-muted: #5b6b7b; /* texto secundário/auxiliar */
+  --color-border: #d6e0ea; /* bordas, divisores e contornos de inputs */
+
+  /* Sinalização de ESTADO (independente da marca azul/branco) */
+  --color-available: #2e7d32; /* verde: impressora disponível */
+  --color-unavailable: #c62828; /* vermelho: indisponível/ocupado */
+  --color-warning: #f9a825; /* estado "desatualizado"/staleness */
+
+  /* Fundos sutis derivados das cores semânticas (para realces acessíveis) */
+  --color-available-subtle: #e8f5e9;
+  --color-unavailable-subtle: #fdecea;
+  --color-warning-subtle: #fff8e1;
+
+  /* Espaçamentos / raio / sombra base */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --shadow-card: 0 1px 3px rgba(26, 39, 51, 0.08), 0 1px 2px rgba(26, 39, 51, 0.06);
+  --focus-ring: 0 0 0 3px var(--color-primary-subtle);
+}
+
+/* ------------------------------------------------------------------ */
+/* Reset leve + base                                                   */
+/* ------------------------------------------------------------------ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--color-text);
+  line-height: 1.25;
+}
+
+/* Anel de foco de marca (azul) visível para navegação por teclado. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ------------------------------------------------------------------ */
+/* Botões utilitários (.btn, .btn--primary, .btn--secondary)           */
+/* ------------------------------------------------------------------ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Primário: fundo azul + texto branco; hover azul mais escuro. Contraste AA (>= 4.5:1). */
+.btn--primary {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+
+.btn--primary:hover:not(:disabled),
+.btn--primary:focus-visible {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+/* Secundário: fundo branco + borda/texto azul; hover preenche com azul sutil. */
+.btn--secondary {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn--secondary:hover:not(:disabled),
+.btn--secondary:focus-visible {
+  background: var(--color-primary-subtle);
+  color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+/* ------------------------------------------------------------------ */
+/* Casca da aplicação / cabeçalho (AppLayout -> detalhado na 18.2)      */
+/* ------------------------------------------------------------------ */
+
+.app-layout__header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.app-layout__header a,
+.app-layout__header a:hover {
+  color: #ffffff;
+}
+
+.app-layout__brand {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.app-layout__nav {
+  display: flex;
+  gap: 8px;
+}
+
+.app-layout__nav-link {
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: #ffffff;
+}
+
+.app-layout__nav-link:hover,
+.app-layout__nav-link:focus-visible {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.app-layout__nav-link--active {
+  background: rgba(255, 255, 255, 0.24);
+  font-weight: 600;
+}
+
+.app-layout__logout {
+  margin-left: auto;
+}
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Inputs / selects compartilhados                                     */
+/* ------------------------------------------------------------------ */
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Lista de impressoras + grid                                         */
+/* ------------------------------------------------------------------ */
+
+.printer-list__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.printer-list__loading,
+.printer-list__empty {
+  color: var(--color-text-muted);
+  padding: 24px 0;
+}
+
+.printer-list__error,
+.printer-list__stale-notice {
+  background: var(--color-unavailable-subtle);
+  border: 1px solid var(--color-unavailable);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+}
+
+.printer-list__refreshing {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.printer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Model_Filter                                                        */
+/* ------------------------------------------------------------------ */
+
+.model-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.model-filter__label {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.model-filter__select {
+  min-width: 180px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Printer_Card                                                        */
+/* ------------------------------------------------------------------ */
+
+.printer-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.printer-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.printer-card__title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+/*
+ * Availability_State: SINALIZAÇÃO por cor semântica (verde/vermelho) + TEXTO.
+ * Preserva verde/vermelho -> NAO usar azul de marca aqui (design.md).
+ * As cores de fundo sutis mantêm texto escuro (--color-text) com contraste AA.
+ */
+.printer-card__availability {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.printer-card__availability[data-availability='disponivel'] {
+  color: var(--color-available);
+  background: var(--color-available-subtle);
+}
+
+.printer-card__availability[data-availability='indisponivel'] {
+  color: var(--color-unavailable);
+  background: var(--color-unavailable-subtle);
+}
+
+/* Borda lateral do card reforça o estado (redundância visual, não só a cor). */
+.printer-card[data-availability='disponivel'] {
+  border-left: 4px solid var(--color-available);
+}
+
+.printer-card[data-availability='indisponivel'] {
+  border-left: 4px solid var(--color-unavailable);
+}
+
+/*
+ * Frescor (staleness): atualizado (neutro), desatualizado (--color-warning),
+ * offline (texto apagado). Distinguível entre os três estados.
+ */
+.printer-card__freshness {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.printer-card__freshness[data-freshness='fresh'] {
+  color: var(--color-available);
+}
+
+.printer-card__freshness[data-freshness='stale'] {
+  color: var(--color-warning);
+}
+
+.printer-card__freshness[data-freshness='offline'] {
+  color: var(--color-unavailable);
+}
+
+.printer-card__fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  margin: 0;
+}
+
+.printer-card__fields dt {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.printer-card__fields dd {
+  margin: 0;
+  color: var(--color-text);
+}
+
+.printer-card__reservation {
+  border-top: 1px solid var(--color-border);
+  padding-top: 12px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Reservation_Controls                                                */
+/* ------------------------------------------------------------------ */
+
+.reservation-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reservation-controls__info {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.reservation-controls__error {
+  margin: 0;
+  color: var(--color-unavailable);
+  font-size: 0.875rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Print_Queue                                                         */
+/* ------------------------------------------------------------------ */
+
+.print-queue {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.print-queue__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.print-queue__title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.print-queue__refreshing {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.print-queue__add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.print-queue__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.print-queue__validation,
+.print-queue__error {
+  margin: 0;
+  color: var(--color-unavailable);
+  font-size: 0.875rem;
+}
+
+.print-queue__stale {
+  margin: 0;
+  color: var(--color-warning);
+  font-size: 0.875rem;
+}
+
+.print-queue__loading,
+.print-queue__empty,
+.print-queue__future-note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.print-queue__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.print-queue__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+/* O PRÓXIMO item é realçado com o azul sutil de marca (seleção/destaque). */
+.print-queue__item--next {
+  background: var(--color-primary-subtle);
+  border-color: var(--color-primary);
+}
+
+.print-queue__item-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.print-queue__badge {
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.print-queue__sku {
+  font-weight: 600;
+}
+
+.print-queue__name {
+  color: var(--color-text);
+}
+
+.print-queue__meta {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.print-queue__item-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* ------------------------------------------------------------------ */
+/* LoginPage (login-page*)                                             */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Tela de login: superfície branca centrada sobre o fundo levemente azulado,
+ * botão primário azul e foco/links em azul (tokens de marca). Contraste AA via
+ * --color-text sobre --color-surface.
+ */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--color-background);
+}
+
+.login-page__form {
+  width: 100%;
+  max-width: 380px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-page__title {
+  margin: 0;
+  font-size: 1.375rem;
+}
+
+.login-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-page__field label {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.login-page__field input {
+  width: 100%;
+}
+
+.login-page__error {
+  margin: 0;
+  color: var(--color-unavailable);
+  background: var(--color-unavailable-subtle);
+  border: 1px solid var(--color-unavailable);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.875rem;
+}
+
+.login-page__submit {
+  width: 100%;
+}
+
+.login-page__switch {
+  margin: 0;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.login-page__switch a {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------------ */
+/* SupplyPage (supply*)                                                */
+/* ------------------------------------------------------------------ */
+
+.supply {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.supply__title {
+  margin: 0;
+}
+
+.supply__subtitle {
+  margin: 0 0 12px;
+  font-size: 1.125rem;
+}
+
+/* Cartão branco do formulário de adicionar/editar. */
+.supply__form-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+}
+
+.supply__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.supply__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.supply__field label {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.supply__field--checkbox label {
+  flex-direction: row;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text);
+}
+
+.supply__form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.supply__error {
+  margin: 0;
+  color: var(--color-unavailable);
+  background: var(--color-unavailable-subtle);
+  border: 1px solid var(--color-unavailable);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.875rem;
+}
+
+.supply__notice {
+  margin: 0;
+  color: var(--color-primary);
+  background: var(--color-primary-subtle);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.875rem;
+}
+
+.supply__loading,
+.supply__empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  padding: 16px 0;
+}
+
+.supply__error-box {
+  background: var(--color-unavailable-subtle);
+  border: 1px solid var(--color-unavailable);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.supply__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.supply__item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.supply__item-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.supply__item-title {
+  font-weight: 600;
+}
+
+.supply__item-desc,
+.supply__item-qty,
+.supply__item-owner {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+/*
+ * Indicador de is_bought: sinalização por cor semântica (verde = comprado,
+ * neutro = a comprar) + TEXTO/ícone (não depende só de cor).
+ */
+.supply__item-bought {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.supply__item-bought[data-bought='true'] {
+  color: var(--color-available);
+}
+
+.supply__item-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* ------------------------------------------------------------------ */
+/* AdminModeControl (admin-mode*)                                      */
+/* ------------------------------------------------------------------ */
+
+.admin-mode {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.admin-mode--active {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  /* Realce sutil azul de marca quando o Admin_Mode está ativo. */
+  background: var(--color-primary-subtle);
+  border-color: var(--color-primary);
+}
+
+.admin-mode__status {
+  margin: 0;
+  color: var(--color-primary-hover);
+  font-weight: 600;
+}
+
+.admin-mode__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.admin-mode__label {
+  display: block;
+  width: 100%;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.admin-mode__input {
+  min-width: 220px;
+}
+
+.admin-mode__error {
+  margin: 0;
+  flex-basis: 100%;
+  color: var(--color-unavailable);
+  font-size: 0.875rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* JobHistoryList (job-history*)                                       */
+/* ------------------------------------------------------------------ */
+
+.job-history {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.job-history__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.job-history__title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.job-history__refreshing {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.job-history__loading,
+.job-history__empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.job-history__error {
+  margin: 0;
+  color: var(--color-unavailable);
+  font-size: 0.875rem;
+}
+
+.job-history__stale {
+  margin: 0;
+  color: var(--color-warning);
+  font-size: 0.875rem;
+}
+
+.job-history__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.job-history__item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.job-history__item-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.job-history__filename {
+  font-weight: 600;
+}
+
+/*
+ * Status do job: sinalização por cor semântica (verde = concluído,
+ * vermelho = cancelado/falha) + TEXTO. Default neutro para estados desconhecidos.
+ */
+.job-history__status {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 2px 10px;
+  border-radius: 999px;
+  color: var(--color-text-muted);
+  background: var(--color-background);
+}
+
+.job-history__status[data-status='completed'],
+.job-history__status[data-status='done'],
+.job-history__status[data-status='finished'] {
+  color: var(--color-available);
+  background: var(--color-available-subtle);
+}
+
+.job-history__status[data-status='cancelled'],
+.job-history__status[data-status='canceled'],
+.job-history__status[data-status='failed'],
+.job-history__status[data-status='error'] {
+  color: var(--color-unavailable);
+  background: var(--color-unavailable-subtle);
+}
+
+.job-history__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px 16px;
+  margin: 0;
+}
+
+.job-history__fields dt {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.job-history__fields dd {
+  margin: 0;
+  color: var(--color-text);
+}
+
+/* ------------------------------------------------------------------ */
+/* PrinterDetailPage (printer-detail*)                                 */
+/* ------------------------------------------------------------------ */
+
+.printer-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.printer-detail__header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.printer-detail__back {
+  font-size: 0.875rem;
+}
+
+.printer-detail__title {
+  margin: 0;
+}
+
+.printer-detail__status {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.printer-detail__status--loading {
+  color: var(--color-text-muted);
+  padding: 24px 0;
+}
+
+.printer-detail__status--error,
+.printer-detail__stale-notice {
+  background: var(--color-unavailable-subtle);
+  border: 1px solid var(--color-unavailable);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.printer-detail__refreshing {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.printer-detail__error {
+  color: var(--color-unavailable);
+}
+
+/* ------------------------------------------------------------------ */
+/* Reduced motion                                                      */
+/* ------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+

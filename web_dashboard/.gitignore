@@ -1,0 +1,17 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+
+# local env (nunca comitar segredos; use .env.example como referência)
+.env
+.env.local
+.env.*.local
+
+# logs / editor
+*.log
+.DS_Store
+
+# TypeScript build info
+*.tsbuildinfo

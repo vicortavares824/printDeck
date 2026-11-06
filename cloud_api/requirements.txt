@@ -17,9 +17,16 @@ greenlet>=3.0.3
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
 
+# Firebase (validação do Firebase_ID_Token na Cloud_API)
+firebase-admin>=6.5.0
+
 # Migrations
 alembic>=1.13.1
 
 # Utils
 python-dotenv>=1.0.1
 python-multipart>=0.0.9
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0

@@ -13,6 +13,7 @@ class FilamentData(BaseModel):
 
 class TelemetryIn(BaseModel):
     printer_id: str
+    model: str | None = None
     state: str
     progress: float = 0.0
     current_file: str | None = None
@@ -24,6 +25,7 @@ class TelemetryIn(BaseModel):
 class TelemetryOut(BaseModel):
     id: int
     printer_id: str
+    model: str | None
     state: str
     progress: float
     current_file: str | None
@@ -34,6 +36,27 @@ class TelemetryOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class PrinterOut(BaseModel):
+    # Item do Printer_List_Endpoint (Req 1.4-1.8): campos de TelemetryOut
+    # (telemetria mais recente da impressora) + o Reservation_State mesclado.
+    # Campos ausentes/nulos (current_file, filament_info, model e os de reserva
+    # quando nao ha linha de reserva) sao serializados como null.
+    id: int
+    printer_id: str
+    state: str
+    progress: float
+    current_file: str | None
+    nozzle_temp: float
+    bed_temp: float
+    filament_info: dict | None
+    model: str | None
+    created_at: datetime
+    # Reservation_State mesclado (default reserved=false quando sem reserva).
+    reserved: bool
+    reserved_by: str | None
+    reserved_at: datetime | None
 
 
 class CloudJobIn(BaseModel):

@@ -33,10 +33,10 @@ class ImprintPage extends HookWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Legal Content'),
+        title: const Text('Conteúdo Legal'),
         actions: [
           IconButton(
-            tooltip: 'Open in Browser',
+            tooltip: 'Abrir no Navegador',
             onPressed: imprintLoaded.value
                 ? () async {
                     if (await canLaunchUrl(imprint)) {

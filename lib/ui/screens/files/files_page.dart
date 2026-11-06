@@ -117,12 +117,12 @@ class _BottomNav extends ConsumerWidget {
           icon: Icon(FlutterIcons.printer_3d_nozzle_outline_mco),
         ),
         const BottomNavigationBarItem(
-          label: 'Configs',
+          label: 'Configurações',
           icon: Icon(FlutterIcons.file_code_faw5),
         ),
         if (ref.watch(klipperSelectedProvider.selectAs((data) => data.hasTimelapseComponent)).valueOrNull == true)
           const BottomNavigationBarItem(
-            label: 'Timelaps',
+            label: 'Timelapses',
             icon: Icon(Icons.subscriptions_outlined),
           ),
       ],

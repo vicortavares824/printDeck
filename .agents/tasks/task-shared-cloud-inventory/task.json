@@ -1,0 +1,7 @@
+{
+  "task_id": "task-shared-cloud-inventory",
+  "task_description": "Make the SupplyHub (almoxarifado) inventory a SHARED/GLOBAL cloud inventory, offline-first, across the FastAPI backend (cloud_api/app) and the Flutter client (lib/features/supply_hub). All devices share ONE cloud inventory (add/edit/delete on one device is visible on others after sync); the cloud always holds the data; the app works fully offline with local Hive persistence across restarts and syncs up when network returns. Remove the per-device partitioning and the destructive sync/pull; keep the HTTP contract shape stable.",
+  "status": "completed",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}

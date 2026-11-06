@@ -14,6 +14,13 @@ class Settings(BaseSettings):
     # Vazio ou "disabled" => nenhum admin é concedido (acesso admin desligado).
     ADMIN_CODE: str = "disabled"
 
+    # Credenciais da conta de serviço (service account) do Firebase, fornecidas
+    # como JSON inline em variável de ambiente. Coerente com o deploy no Render,
+    # onde não há sistema de arquivos persistente para um keyfile. Quando este
+    # valor estiver vazio, o firebase-admin NÃO é inicializado e toda validação
+    # de Firebase_ID_Token falha (degradação segura: só a x-api-key autoriza).
+    FIREBASE_SERVICE_ACCOUNT_JSON: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     @property

@@ -7,6 +7,7 @@ from typing import List, Optional
 
 from app.core.database import get_db
 from app.core.config import settings
+from app.core.auth import Identity, require_auth
 from app.models.supply import CloudSupplyItem
 from app.schemas.supply import (
     SupplyItemIn,
@@ -21,12 +22,6 @@ router = APIRouter(prefix="/api/supply", tags=["supply"])
 # editam o mesmo conjunto de itens. Last-write-wins por updated_at é aceitável para v1.
 # /sync é um upsert por item e NUNCA deve apagar em massa o escopo compartilhado.
 SHARED_SCOPE = "__shared__"
-
-
-def verify_secret(x_api_key: str | None = Header(default=None)):
-    if settings.API_SECRET_KEY and settings.API_SECRET_KEY != "disabled":
-        if x_api_key != settings.API_SECRET_KEY:
-            raise HTTPException(status_code=401, detail="Chave de API inválida ou ausente")
 
 
 def is_admin(x_admin_code: str | None = Header(default=None)) -> bool:
@@ -54,25 +49,31 @@ def _can_modify(item: CloudSupplyItem, acting_device_id: str, admin: bool) -> bo
     return item.owner_id == acting_device_id
 
 
-@router.get("/items", response_model=List[SupplyItemOut], dependencies=[Depends(verify_secret)])
+@router.get("/items", response_model=List[SupplyItemOut])
 async def list_supply_items(
     device_id: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
+    identity: Identity = Depends(require_auth),
 ):
     # device_id é aceito para estabilidade do contrato, mas IGNORADO para escopo:
     # sempre retornamos todo o inventário compartilhado (incluindo owner_id, para
     # o cliente saber quem é o dono de cada item).
+    #
+    # Identidade efetiva (preferindo o e-mail do token quando presente); não altera
+    # o escopo compartilhado, mas mantém o contrato consistente com /sync e /delete.
+    acting_device_id = identity.email or device_id
     result = await db.execute(
         select(CloudSupplyItem).where(CloudSupplyItem.device_id == SHARED_SCOPE)
     )
     return result.scalars().all()
 
 
-@router.post("/sync", response_model=SupplySyncOut, dependencies=[Depends(verify_secret)])
+@router.post("/sync", response_model=SupplySyncOut)
 async def sync_supply_items(
     data: SupplySyncIn,
     db: AsyncSession = Depends(get_db),
     admin: bool = Depends(is_admin),
+    identity: Identity = Depends(require_auth),
 ):
     # Upsert por item dentro do escopo compartilhado. NÃO apaga itens ausentes do
     # payload (não destrutivo).
@@ -81,7 +82,11 @@ async def sync_supply_items(
     #  - INSERT (item novo): o dono (owner_id) passa a ser o device_id que está agindo.
     #  - UPDATE (item existente): permitido só se o device for o dono OU admin;
     #    caso contrário o item é IGNORADO e seu item_id entra em `forbidden`.
-    acting_device_id = data.device_id
+    #
+    # Identidade efetiva: preferir o e-mail das claims do token (quando presente),
+    # senão o device_id do corpo. É este valor que vira owner_id em inserts e é
+    # comparado em _can_modify para updates (posse por e-mail — Req 16).
+    acting_device_id = identity.email or data.device_id
     synced = 0
     forbidden: list[str] = []
 
@@ -122,16 +127,21 @@ async def sync_supply_items(
     return SupplySyncOut(synced=synced, forbidden=forbidden)
 
 
-@router.delete("/items/{item_id}", dependencies=[Depends(verify_secret)])
+@router.delete("/items/{item_id}")
 async def delete_supply_item(
     item_id: str,
     device_id: str,
     db: AsyncSession = Depends(get_db),
     admin: bool = Depends(is_admin),
+    identity: Identity = Depends(require_auth),
 ):
     # device_id = dispositivo que está agindo (para autorização). A remoção é no
     # inventário compartilhado (vale para todos), mas só é permitida ao dono do
     # item ou a um admin; caso contrário retorna 403.
+    #
+    # Identidade efetiva: preferir o e-mail das claims do token (quando presente),
+    # senão o device_id da query (posse por e-mail — Req 16).
+    acting_device_id = identity.email or device_id
     result = await db.execute(
         select(CloudSupplyItem).where(
             CloudSupplyItem.item_id == item_id,
@@ -142,7 +152,7 @@ async def delete_supply_item(
     if not item:
         raise HTTPException(status_code=404, detail="Item não encontrado")
 
-    if not _can_modify(item, device_id, admin):
+    if not _can_modify(item, acting_device_id, admin):
         raise HTTPException(
             status_code=403,
             detail="Apenas o criador do item ou um administrador pode excluí-lo.",
@@ -153,7 +163,7 @@ async def delete_supply_item(
     return {"deleted": True}
 
 
-@router.post("/admin/verify", dependencies=[Depends(verify_secret)])
+@router.post("/admin/verify", dependencies=[Depends(require_auth)])
 async def verify_admin(admin: bool = Depends(is_admin)):
     # Permite ao cliente confirmar o código de admin antes de armazená-lo.
     # Retorna 200 {"admin": true} quando o header x-admin-code confere; senão 403.

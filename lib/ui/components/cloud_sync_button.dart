@@ -33,26 +33,40 @@ class CloudSyncButton extends HookConsumerWidget {
     try {
       final dio = Dio(
         BaseOptions(
-          connectTimeout: const Duration(seconds: 10),
-          receiveTimeout: const Duration(seconds: 15),
+          // O Render (plano free) hiberna e pode levar de 30 a 60s para
+          // acordar no primeiro acesso (cold start). Timeouts generosos
+          // evitam o "receive timeout" nesse cenário.
+          connectTimeout: const Duration(seconds: 60),
+          receiveTimeout: const Duration(seconds: 60),
+          sendTimeout: const Duration(seconds: 60),
         ),
       );
 
       final base = cloudApiUrl.replaceAll(RegExp(r'/+$'), '');
 
-      final response = await dio.post(
-        '$base/api/telemetry',
-        data: {
-          'printer_id': printerId,
-          'state': 'online',
-          'progress': 0.0,
-          'current_file': null,
-          'nozzle_temp': 0.0,
-          'bed_temp': 0.0,
-          'filament': null,
-        },
-        options: Options(headers: {'x-api-key': apiKey}),
-      );
+      final payload = {
+        'printer_id': printerId,
+        'state': 'online',
+        'progress': 0.0,
+        'current_file': null,
+        'nozzle_temp': 0.0,
+        'bed_temp': 0.0,
+        'filament': null,
+      };
+      final options = Options(headers: {'x-api-key': apiKey});
+
+      Response response;
+      try {
+        response = await dio.post('$base/api/telemetry', data: payload, options: options);
+      } on DioException catch (e) {
+        // Cold start: tenta uma segunda vez, pois a primeira já "acordou" o servidor.
+        final isColdStart = e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.receiveTimeout ||
+            e.type == DioExceptionType.sendTimeout ||
+            e.type == DioExceptionType.connectionError;
+        if (!isColdStart) rethrow;
+        response = await dio.post('$base/api/telemetry', data: payload, options: options);
+      }
 
       if (!context.mounted) return;
 
